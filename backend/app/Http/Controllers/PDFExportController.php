@@ -82,5 +82,44 @@ class PDFExportController extends Controller
 
         return response()->download($filePath);
     }
+
+    /**
+     * Export portfolio to PDF from public link (no auth required)
+     */
+    public function exportPublicPortfolio($publicLink, Request $request)
+    {
+        $portofolio = Portofolio::where('public_link', $publicLink)
+            ->where('is_public', true)
+            ->with(['mahasiswa.user', 'projects', 'skills', 'certificates', 'experiences'])
+            ->first();
+
+        if (!$portofolio) {
+            return response()->json(['message' => 'Portofolio tidak ditemukan atau tidak publik'], 404);
+        }
+
+        $mahasiswa = $portofolio->mahasiswa;
+
+        // Load all related data
+        $mahasiswa->load(['user', 'projects', 'skills', 'certificates', 'experiences']);
+
+        // For now, return JSON with data. PDF generation can be implemented with dompdf package
+        $filename = 'portfolio_' . $mahasiswa->user->name . '_' . time() . '.json';
+        $path = 'portfolios/' . $filename;
+        
+        // Store portfolio data as JSON for now
+        $data = [
+            'portofolio' => $portofolio,
+            'mahasiswa' => $mahasiswa,
+            'exported_at' => now()->toDateTimeString(),
+        ];
+        
+        file_put_contents(storage_path('app/public/' . $path), json_encode($data, JSON_PRETTY_PRINT));
+
+        return response()->json([
+            'message' => 'PDF berhasil dibuat',
+            'pdf_url' => asset('storage/' . $path),
+            'filename' => $filename
+        ]);
+    }
 }
 

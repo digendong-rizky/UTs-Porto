@@ -6,6 +6,7 @@ use App\Models\Mahasiswa;
 use App\Models\Portofolio;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class PortfolioController extends Controller
@@ -202,7 +203,7 @@ class PortfolioController extends Controller
         ]);
     }
 
-    public function getPublicPortfolio($publicLink)
+    public function getPublicPortfolio(Request $request, $publicLink)
     {
         $portofolio = Portofolio::where('public_link', $publicLink)
             ->where('is_public', true)
@@ -213,8 +214,29 @@ class PortfolioController extends Controller
             return response()->json(['message' => 'Portofolio tidak ditemukan atau tidak publik'], 404);
         }
 
+        // Check if current user is the owner
+        $isOwner = false;
+        
+        // Try to get user from Authorization header if provided
+        $authHeader = $request->header('Authorization');
+        if ($authHeader && str_starts_with($authHeader, 'Bearer ')) {
+            $token = str_replace('Bearer ', '', $authHeader);
+            try {
+                $personalAccessToken = \Laravel\Sanctum\PersonalAccessToken::findToken($token);
+                if ($personalAccessToken) {
+                    $user = $personalAccessToken->tokenable;
+                    if ($user && $user->role === 'mahasiswa' && $user->mahasiswa && $user->mahasiswa->id === $portofolio->mahasiswa_id) {
+                        $isOwner = true;
+                    }
+                }
+            } catch (\Exception $e) {
+                // If token check fails, continue as guest
+            }
+        }
+
         return response()->json([
-            'portofolio' => $portofolio
+            'portofolio' => $portofolio,
+            'is_owner' => $isOwner
         ]);
     }
 
@@ -272,6 +294,27 @@ class PortfolioController extends Controller
         $portfolios = $query->orderBy('created_at', 'desc')->get();
 
         return response()->json(['portfolios' => $portfolios]);
+    }
+
+    /**
+     * Get all public portfolios by mahasiswa ID
+     * Public endpoint untuk melihat semua CV/portofolio yang sudah dibuat oleh seorang mahasiswa
+     */
+    public function getPublicPortfoliosByMahasiswa($mahasiswaId)
+    {
+        $portofolios = Portofolio::where('mahasiswa_id', $mahasiswaId)
+            ->where('is_public', true)
+            ->whereNotNull('public_link')
+            ->with(['skills' => function($q) {
+                $q->limit(3); // Limit skills untuk preview
+            }])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'portfolios' => $portofolios,
+            'total' => $portofolios->count()
+        ]);
     }
 }
 

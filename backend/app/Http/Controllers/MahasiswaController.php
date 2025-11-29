@@ -32,6 +32,14 @@ class MahasiswaController extends Controller
             'no_telp' => 'nullable|string|max:20',
             'alamat' => 'nullable|string',
             'deskripsi_diri' => 'nullable|string', // Bio
+            'nim' => 'nullable|string|max:50',
+            'jurusan' => 'nullable|string|max:255',
+            'fakultas' => 'nullable|string|max:255',
+            'universitas' => 'nullable|string|max:255',
+            'tanggal_lahir' => 'nullable|date',
+            'linkedin' => 'nullable|string|max:255|url',
+            'github' => 'nullable|string|max:255|url',
+            'website' => 'nullable|string|max:255|url',
         ]);
 
         if ($validator->fails()) {
@@ -49,16 +57,14 @@ class MahasiswaController extends Controller
             $user->update(['email' => $request->email]);
         }
 
-        // Update mahasiswa (no_telp, alamat, deskripsi_diri)
+        // Update mahasiswa (semua field mahasiswa)
         $mahasiswaData = [];
-        if ($request->has('no_telp')) {
-            $mahasiswaData['no_telp'] = $request->no_telp;
-        }
-        if ($request->has('alamat')) {
-            $mahasiswaData['alamat'] = $request->alamat;
-        }
-        if ($request->has('deskripsi_diri')) {
-            $mahasiswaData['deskripsi_diri'] = $request->deskripsi_diri;
+        $mahasiswaFields = ['no_telp', 'alamat', 'deskripsi_diri', 'nim', 'jurusan', 'fakultas', 'universitas', 'tanggal_lahir', 'linkedin', 'github', 'website'];
+        
+        foreach ($mahasiswaFields as $field) {
+            if ($request->has($field)) {
+                $mahasiswaData[$field] = $request->$field;
+            }
         }
         
         if (!empty($mahasiswaData)) {
@@ -73,8 +79,8 @@ class MahasiswaController extends Controller
     }
 
     /**
-     * Get profil mahasiswa (view only)
-     * Tidak termasuk alamat di response
+     * Get profil mahasiswa
+     * Mengembalikan semua data termasuk alamat untuk keperluan edit
      */
     public function show(Request $request)
     {
@@ -90,16 +96,36 @@ class MahasiswaController extends Controller
             return response()->json(['message' => 'Profil mahasiswa tidak ditemukan'], 404);
         }
 
-        // Load data tanpa alamat
+        // Load semua data termasuk alamat
         $mahasiswaData = $mahasiswa->load(['user']);
-        
-        // Remove alamat from response
-        $mahasiswaArray = $mahasiswaData->toArray();
-        unset($mahasiswaArray['alamat']);
 
         return response()->json([
-            'mahasiswa' => $mahasiswaArray,
+            'mahasiswa' => $mahasiswaData,
             'user' => $user->only(['id', 'name', 'email'])
+        ]);
+    }
+
+    /**
+     * Get public profile of mahasiswa by ID (view-only)
+     * Bisa diakses tanpa authentication untuk melihat profil owner portofolio
+     */
+    public function getPublicProfile($id)
+    {
+        $mahasiswa = Mahasiswa::with(['user'])
+            ->where('id', $id)
+            ->first();
+
+        if (!$mahasiswa) {
+            return response()->json(['message' => 'Profil mahasiswa tidak ditemukan'], 404);
+        }
+
+        // Return data tanpa alamat untuk keamanan
+        $mahasiswaData = $mahasiswa->toArray();
+        unset($mahasiswaData['alamat']);
+
+        return response()->json([
+            'mahasiswa' => $mahasiswaData,
+            'user' => $mahasiswa->user->only(['id', 'name', 'email'])
         ]);
     }
 }

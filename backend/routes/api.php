@@ -17,6 +17,9 @@ use App\Http\Controllers\RoleController;
 // Public routes
 Route::get('/portfolio/{publicLink}', [PortfolioController::class, 'getPublicPortfolio']);
 Route::get('/portfolios/public', [PortfolioController::class, 'getPublicPortfolios']);
+Route::post('/portfolio/{publicLink}/export-pdf', [PDFExportController::class, 'exportPublicPortfolio']);
+Route::get('/mahasiswa/{id}/profile', [MahasiswaController::class, 'getPublicProfile']);
+Route::get('/mahasiswa/{id}/portfolios', [PortfolioController::class, 'getPublicPortfoliosByMahasiswa']);
 
 // Auth routes
 Route::post('/register', [AuthController::class, 'register']);
