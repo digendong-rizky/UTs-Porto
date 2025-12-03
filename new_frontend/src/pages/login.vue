@@ -125,7 +125,7 @@ const handleLogin = async () => {
     if (user.role === 'admin') {
       router.push('/dashboard/admin')
     } else if (user.role === 'mahasiswa') {
-      router.push('/dashboard/mahasiswa')
+      router.push('/profile/mahasiswa')
     } else if (user.role === 'perusahaan') {
       router.push('/dashboard/perusahaan')
     } else {
@@ -185,8 +185,8 @@ const handleCallbackCheck = async (path) => {
         console.log('Redirecting to admin dashboard')
         router.push('/dashboard/admin')
       } else if (user.role === 'mahasiswa') {
-        console.log('Redirecting to mahasiswa dashboard')
-        router.push('/dashboard/mahasiswa')
+        console.log('Redirecting to mahasiswa profile')
+        router.push('/profile/mahasiswa')
       } else if (user.role === 'perusahaan') {
         console.log('Redirecting to perusahaan dashboard')
         router.push('/dashboard/perusahaan')

@@ -59,7 +59,7 @@ const selectRole = async (role) => {
     
     // Redirect based on role
     if (role === 'mahasiswa') {
-      router.push('/dashboard/mahasiswa')
+      router.push('/profile/mahasiswa')
     } else if (role === 'perusahaan') {
       router.push('/dashboard/perusahaan')
     } else {

@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-b from-purple-800 via-purple-600 to-purple-400">
+  <div class="min-h-screen dashboard-gradient flex flex-col">
     <!-- Header -->
     <header class="bg-gray-100 rounded-b-lg shadow-sm mb-8">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -13,7 +13,7 @@
             </div>
           </div>
           <div class="flex items-center gap-6">
-            <router-link to="/explore" class="text-gray-700 hover:text-purple-700">Home</router-link>
+            <router-link to="/" class="text-gray-700 hover:text-purple-700">Home</router-link>
             <router-link to="/explore" class="text-gray-700 hover:text-purple-700">Portofolio</router-link>
             <div class="flex items-center gap-2 bg-gray-200 px-4 py-2 rounded-lg">
               <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white">
@@ -21,12 +21,19 @@
               </div>
               <span class="font-semibold">{{ user?.name || 'User' }}</span>
             </div>
+            <button 
+              @click="handleLogout" 
+              class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
+            >
+              Logout
+            </button>
           </div>
         </div>
       </div>
     </header>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+    <!-- Main Content - Flex grow untuk push footer ke bawah -->
+    <div class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 w-full">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Left Panel - Profile Card -->
         <div class="lg:col-span-1">
@@ -65,33 +72,31 @@
             <div class="mb-6">
               <h3 class="text-xl font-bold text-gray-800 mb-4">My document</h3>
               <div class="flex gap-4">
-                <div class="w-16 h-16 border-2 border-gray-400 rounded-lg flex items-center justify-center cursor-pointer hover:border-purple-600">
+                <div 
+                  @click="goToPortfolioList"
+                  class="w-16 h-16 border-2 border-gray-400 rounded-lg flex items-center justify-center cursor-pointer hover:border-purple-600"
+                >
                   <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
                 </div>
-                <div class="w-16 h-16 border-2 border-gray-400 rounded-lg flex items-center justify-center cursor-pointer hover:border-purple-600" @click="showAddDocument = true">
-                  <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div 
+                  @click="goToCreatePortfolio"
+                  class="w-16 h-16 border-2 border-purple-600 rounded-lg flex items-center justify-center cursor-pointer hover:border-purple-700 bg-purple-50"
+                >
+                  <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                   </svg>
                 </div>
               </div>
             </div>
-
-            <!-- Edit Profile Button -->
-            <button
-              @click="goToEdit"
-              class="w-full bg-purple-700 text-white px-6 py-3 rounded-lg hover:bg-purple-800 font-semibold transition"
-            >
-              Edit Profil
-            </button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-purple-900 mt-12 py-8">
+    <!-- Footer - Akan selalu di bawah -->
+    <footer class="bg-purple-900 mt-auto py-8">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
@@ -144,8 +149,67 @@ const loadData = async () => {
   }
 }
 
-const goToEdit = () => {
-  router.push('/dashboard/mahasiswa?tab=profile')
+const goToPortfolioList = () => {
+  router.push('/portfolio/list')
+}
+
+const handleLogout = async () => {
+  try {
+    await axios.post('/api/logout')
+    localStorage.removeItem('token')
+    router.push('/login')
+  } catch (error) {
+    localStorage.removeItem('token')
+    router.push('/login')
+  }
+}
+
+const goToCreatePortfolio = async () => {
+  try {
+    const token = localStorage.getItem('token')
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+    }
+
+    // Create new portfolio with default values
+    const res = await axios.post('/api/mahasiswa/portfolios', {
+      nama: 'Portofolio Baru',
+      bidang: '',
+      deskripsi: ''
+    })
+
+    // Redirect to preview page with the new portfolio ID
+    if (res.data.portofolio?.id || res.data.portfolio?.id) {
+      const portfolioId = res.data.portofolio?.id || res.data.portfolio?.id
+      router.push(`/portfolio/preview/${portfolioId}`)
+    } else {
+      // Fallback: redirect to list if creation fails
+      router.push('/portfolio/list')
+    }
+  } catch (error) {
+    console.error('Error creating portfolio:', error)
+    alert('Gagal membuat portofolio baru: ' + (error.response?.data?.message || 'Unknown error'))
+    // Fallback: redirect to list
+    router.push('/portfolio/list')
+  }
 }
 </script>
+
+<style scoped>
+.dashboard-gradient {
+  background: 
+    radial-gradient(ellipse 150% 80% at 50% 0%, 
+      #4c1d95 0%, 
+      #5b21b6 10%, 
+      #6b21a8 20%, 
+      #7c3aed 35%, 
+      #9333ea 50%, 
+      #a855f7 65%, 
+      #c084fc 80%, 
+      #ddd6fe 92%, 
+      #f3e8ff 98%, 
+      #ffffff 100%
+    );
+}
+</style>
 

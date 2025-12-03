@@ -7,6 +7,7 @@ use App\Models\Mahasiswa;
 use App\Models\Perusahaan;
 use App\Models\Admin;
 use App\Models\ActivityLog;
+use App\Models\Portofolio;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
@@ -251,6 +252,56 @@ class AdminController extends Controller
         ];
         
         return response()->json($stats);
+    }
+
+    /**
+     * Get all portfolios for admin
+     */
+    public function getPortfolios(Request $request)
+    {
+        $query = Portofolio::with([
+            'mahasiswa.user',
+            'skills'
+        ]);
+
+        // Filter by bidang if provided
+        if ($request->has('bidang') && $request->bidang) {
+            $query->where('bidang', $request->bidang);
+        }
+
+        $portfolios = $query->orderBy('created_at', 'desc')->get();
+
+        return response()->json(['portfolios' => $portfolios]);
+    }
+
+    /**
+     * Delete portfolio by admin
+     */
+    public function deletePortfolio(Request $request, $id)
+    {
+        $portfolio = Portofolio::with('mahasiswa.user')->find($id);
+        
+        if (!$portfolio) {
+            return response()->json(['message' => 'Portofolio tidak ditemukan'], 404);
+        }
+
+        $portfolioName = $portfolio->nama;
+        $studentName = $portfolio->mahasiswa->user->name ?? 'Unknown';
+
+        // Log activity before deletion
+        ActivityLog::create([
+            'admin_id' => $request->user()->admin->id,
+            'user_id' => $portfolio->mahasiswa->user_id ?? null,
+            'action' => 'delete',
+            'model_type' => 'Portofolio',
+            'model_id' => $portfolio->id,
+            'description' => "Admin menghapus portofolio: {$portfolioName} (milik: {$studentName})",
+            'ip_address' => $request->ip(),
+        ]);
+
+        $portfolio->delete();
+
+        return response()->json(['message' => 'Portofolio berhasil dihapus']);
     }
 }
 

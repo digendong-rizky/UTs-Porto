@@ -6,6 +6,7 @@ use App\Models\Mahasiswa;
 use App\Models\Portofolio;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\View;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class PDFExportController extends Controller
 {
@@ -23,33 +24,30 @@ class PDFExportController extends Controller
             return response()->json(['message' => 'Profil mahasiswa tidak ditemukan'], 404);
         }
 
-        // Load all related data
-        $mahasiswa->load(['user', 'projects', 'skills', 'certificates', 'experiences', 'portofolio']);
-
-        // For now, return JSON with data. PDF generation can be implemented with dompdf package
-        // Install: composer require barryvdh/laravel-dompdf
-        $filename = 'portfolio_' . $mahasiswa->user->name . '_' . time() . '.json';
-        $path = 'portfolios/' . $filename;
+        // Get portfolio ID from request if provided
+        $portfolioId = $request->input('portofolio_id');
         
-        // Store portfolio data as JSON for now
-        $data = [
-            'mahasiswa' => $mahasiswa,
-            'exported_at' => now()->toDateTimeString(),
-        ];
-        
-        file_put_contents(storage_path('app/public/' . $path), json_encode($data, JSON_PRETTY_PRINT));
-
-        // Update portfolio PDF path
-        $portofolio = $mahasiswa->portofolio;
-        if ($portofolio) {
-            $portofolio->update(['pdf_path' => $path]);
+        // Load portfolio if ID provided, otherwise get first portfolio
+        if ($portfolioId) {
+            $portofolio = $mahasiswa->portofolios()->with(['projects', 'skills', 'certificates', 'experiences'])->find($portfolioId);
+        } else {
+            $portofolio = $mahasiswa->portofolios()->with(['projects', 'skills', 'certificates', 'experiences'])->first();
         }
 
-        return response()->json([
-            'message' => 'PDF berhasil dibuat',
-            'pdf_url' => asset('storage/' . $path),
-            'filename' => $filename
+        // Load all related data
+        $mahasiswa->load(['user', 'projects', 'skills', 'certificates', 'experiences']);
+
+        // Generate PDF
+        $pdf = Pdf::loadView('portfolio-pdf', [
+            'mahasiswa' => $mahasiswa,
+            'portofolio' => $portofolio
         ]);
+
+        // Generate filename
+        $filename = 'portfolio_' . str_replace(' ', '_', $mahasiswa->user->name) . '_' . time() . '.pdf';
+        
+        // Return PDF as download directly
+        return $pdf->download($filename);
     }
 
     public function downloadPortfolio($id, Request $request)
@@ -102,24 +100,17 @@ class PDFExportController extends Controller
         // Load all related data
         $mahasiswa->load(['user', 'projects', 'skills', 'certificates', 'experiences']);
 
-        // For now, return JSON with data. PDF generation can be implemented with dompdf package
-        $filename = 'portfolio_' . $mahasiswa->user->name . '_' . time() . '.json';
-        $path = 'portfolios/' . $filename;
-        
-        // Store portfolio data as JSON for now
-        $data = [
-            'portofolio' => $portofolio,
+        // Generate PDF
+        $pdf = Pdf::loadView('portfolio-pdf', [
             'mahasiswa' => $mahasiswa,
-            'exported_at' => now()->toDateTimeString(),
-        ];
-        
-        file_put_contents(storage_path('app/public/' . $path), json_encode($data, JSON_PRETTY_PRINT));
-
-        return response()->json([
-            'message' => 'PDF berhasil dibuat',
-            'pdf_url' => asset('storage/' . $path),
-            'filename' => $filename
+            'portofolio' => $portofolio
         ]);
+
+        // Generate filename
+        $filename = 'portfolio_' . str_replace(' ', '_', $mahasiswa->user->name) . '_' . time() . '.pdf';
+        
+        // Return PDF as download directly
+        return $pdf->download($filename);
     }
 }
 

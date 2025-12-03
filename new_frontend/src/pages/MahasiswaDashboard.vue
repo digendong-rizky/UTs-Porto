@@ -1,11 +1,10 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div class="min-h-screen dashboard-gradient">
     <!-- Header -->
     <header class="bg-white shadow-sm">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
         <h1 class="text-2xl font-bold text-purple-700">Dashboard Mahasiswa</h1>
         <div class="flex gap-4 items-center">
-          <router-link to="/explore" class="text-purple-700 hover:text-purple-900">Jelajahi Portofolio</router-link>
           <router-link to="/profile/mahasiswa" class="text-purple-700 hover:text-purple-900">Lihat Profil</router-link>
           <span class="text-gray-600">{{ user?.name }}</span>
           <button @click="handleLogout" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
@@ -40,7 +39,7 @@
       <!-- Profile Tab -->
       <div v-if="activeTab === 'profile'" class="bg-white rounded-lg shadow p-6">
         <h2 class="text-xl font-bold mb-4">Profil Saya</h2>
-        <form @submit.prevent="updateProfile" class="space-y-4">
+        <div class="space-y-4">
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Nama</label>
@@ -77,12 +76,15 @@
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi Diri</label>
-            <textarea v-model="profileForm.deskripsi_diri" rows="4" class="w-full border rounded-lg px-3 py-2"></textarea>
+            <p class="text-gray-700">{{ profileForm.deskripsi_diri || 'Belum ada deskripsi' }}</p>
           </div>
-          <button type="submit" class="bg-purple-700 text-white px-6 py-2 rounded-lg hover:bg-purple-800">
-            Simpan Perubahan
-          </button>
-        </form>
+          <div class="pt-4">
+            <p class="text-sm text-gray-500 mb-2">Untuk mengedit profil, silakan klik "Edit Profil" di bagian list portofolio</p>
+            <router-link to="/portfolio/list" class="inline-block bg-purple-700 text-white px-6 py-2 rounded-lg hover:bg-purple-800">
+              Ke List Portofolio
+            </router-link>
+          </div>
+        </div>
       </div>
 
       <!-- Projects Tab -->
@@ -293,11 +295,15 @@ const loadData = async () => {
     const userRes = await axios.get('/api/me')
     user.value = userRes.data.user
 
-    const portfolioRes = await axios.get('/api/mahasiswa/portfolio')
-    portfolio.value = portfolioRes.data.portofolio
-    mahasiswa.value = portfolioRes.data.mahasiswa
-    projects.value = portfolioRes.data.mahasiswa.projects || []
-    skills.value = portfolioRes.data.mahasiswa.skills || []
+    const profileRes = await axios.get('/api/mahasiswa/profile')
+    mahasiswa.value = profileRes.data.mahasiswa
+    user.value = profileRes.data.user
+    
+    // Load projects and skills (global, not per portfolio)
+    const projectsRes = await axios.get('/api/mahasiswa/projects')
+    projects.value = projectsRes.data.projects || []
+    const skillsRes = await axios.get('/api/mahasiswa/skills')
+    skills.value = skillsRes.data.skills || []
 
     if (mahasiswa.value) {
       profileForm.value = {
@@ -312,10 +318,6 @@ const loadData = async () => {
         deskripsi_diri: mahasiswa.value.deskripsi_diri || ''
       }
     }
-
-    if (portfolio.value) {
-      portfolioForm.value.is_public = portfolio.value.is_public
-    }
   } catch (error) {
     console.error('Error loading data:', error)
     if (error.response?.status === 401) {
@@ -324,15 +326,7 @@ const loadData = async () => {
   }
 }
 
-const updateProfile = async () => {
-  try {
-    await axios.put('/api/mahasiswa/profile', profileForm.value)
-    alert('Profil berhasil diperbarui')
-    router.push('/profile/mahasiswa')
-  } catch (error) {
-    alert('Gagal memperbarui profil: ' + (error.response?.data?.message || 'Unknown error'))
-  }
-}
+// Profile is view-only here, edit is in PortfolioList
 
 const updatePortfolioVisibility = async () => {
   try {
@@ -360,13 +354,24 @@ const copyPublicLink = () => {
 
 const exportPDF = async () => {
   try {
-    const res = await axios.post('/api/mahasiswa/export-pdf')
-    if (res.data.pdf_url) {
-      window.open(res.data.pdf_url, '_blank')
-    }
-    alert('PDF berhasil dibuat')
+    const res = await axios.post('/api/mahasiswa/export-pdf', {}, {
+      responseType: 'blob'
+    })
+    
+    // Create blob URL and trigger download
+    const blob = new Blob([res.data], { type: 'application/pdf' })
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `portfolio_${user.value?.name || 'portfolio'}_${Date.now()}.pdf`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+    
+    alert('PDF berhasil diunduh')
   } catch (error) {
-    alert('Gagal membuat PDF')
+    alert('Gagal membuat PDF: ' + (error.response?.data?.message || 'Unknown error'))
   }
 }
 
@@ -489,3 +494,21 @@ const handleLogout = async () => {
   }
 }
 </script>
+
+<style scoped>
+.dashboard-gradient {
+  background: 
+    radial-gradient(ellipse 150% 80% at 50% 0%, 
+      #4c1d95 0%, 
+      #5b21b6 10%, 
+      #6b21a8 20%, 
+      #7c3aed 35%, 
+      #9333ea 50%, 
+      #a855f7 65%, 
+      #c084fc 80%, 
+      #ddd6fe 92%, 
+      #f3e8ff 98%, 
+      #ffffff 100%
+    );
+}
+</style>

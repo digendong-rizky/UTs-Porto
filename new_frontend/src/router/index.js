@@ -3,13 +3,15 @@ import Home from '@/pages/Home.vue'
 import Login from '@/pages/login.vue'
 import Register from '@/pages/register.vue'
 import Dashboard from '@/pages/dashboard.vue'
-import MahasiswaDashboard from '@/pages/MahasiswaDashboard.vue'
 import MahasiswaProfile from '@/pages/MahasiswaProfile.vue'
 import ExplorePortfolio from '@/pages/ExplorePortfolio.vue'
 import AdminDashboard from '@/pages/AdminDashboard.vue'
 import CompanyDashboard from '@/pages/CompanyDashboard.vue'
 import PublicPortfolio from '@/pages/PublicPortfolio.vue'
 import PilihRole from '@/pages/PilihRole.vue'
+import PortfolioList from '@/pages/PortfolioList.vue'
+import PortfolioPreview from '@/pages/PortfolioPreview.vue'
+import ViewMahasiswaProfile from '@/pages/ViewMahasiswaProfile.vue'
 
 const routes = [
   {
@@ -33,14 +35,13 @@ const routes = [
     component: Dashboard,
   },
   {
-    path: '/dashboard/mahasiswa',
-    name: 'MahasiswaDashboard',
-    component: MahasiswaDashboard,
-  },
-  {
     path: '/profile/mahasiswa',
     name: 'MahasiswaProfile',
     component: MahasiswaProfile,
+  },
+  {
+    path: '/dashboard/mahasiswa',
+    redirect: '/profile/mahasiswa',
   },
   {
     path: '/explore',
@@ -71,6 +72,21 @@ const routes = [
     path: '/pilih-role',
     name: 'PilihRole',
     component: PilihRole,
+  },
+  {
+    path: '/portfolio/list',
+    name: 'PortfolioList',
+    component: PortfolioList,
+  },
+  {
+    path: '/portfolio/preview/:id',
+    name: 'PortfolioPreview',
+    component: PortfolioPreview,
+  },
+  {
+    path: '/mahasiswa/:id/profile',
+    name: 'ViewMahasiswaProfile',
+    component: ViewMahasiswaProfile,
   },
 ]
 

@@ -25,14 +25,14 @@
       <form @submit.prevent="handleRegister" class="space-y-4">
         <div>
           <label class="block text-gray-700 text-sm font-bold mb-2">
-            Nama Lengkap
+            {{ form.role === 'perusahaan' ? 'Nama Perusahaan' : 'Nama Lengkap' }}
           </label>
           <input
             v-model="form.name"
             type="text"
             required
             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-            placeholder="Masukkan nama lengkap"
+            :placeholder="form.role === 'perusahaan' ? 'Masukkan nama perusahaan' : 'Masukkan nama lengkap'"
           />
         </div>
 
@@ -144,7 +144,7 @@ const handleRegister = async () => {
     
     // Redirect based on role
     if (response.data.user.role === 'mahasiswa') {
-      router.push('/dashboard/mahasiswa')
+      router.push('/profile/mahasiswa')
     } else if (response.data.user.role === 'perusahaan') {
       router.push('/dashboard/perusahaan')
     } else {

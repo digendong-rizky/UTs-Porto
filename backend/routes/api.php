@@ -77,6 +77,8 @@ Route::middleware(['auth:sanctum', 'activity.log'])->group(function () {
         Route::post('/users/{id}/verify', [AdminController::class, 'verifyUser']);
         Route::get('/activity-logs', [AdminController::class, 'getActivityLogs']);
         Route::get('/dashboard-stats', [AdminController::class, 'getDashboardStats']);
+        Route::get('/portfolios', [AdminController::class, 'getPortfolios']);
+        Route::delete('/portfolios/{id}', [AdminController::class, 'deletePortfolio']);
     });
 
     // PDF download (protected)

@@ -1,6 +1,6 @@
 <template>
   <div
-    class="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-700 to-purple-300 text-white"
+    class="min-h-screen flex flex-col items-center justify-center dashboard-gradient text-white"
   >
     <h1 class="text-5xl font-bold mb-4 font-poppins">Dashboard</h1>
     <p class="text-lg font-roboto mb-8">
@@ -32,7 +32,7 @@ onMounted(async () => {
     if (user.role === 'admin') {
       router.push('/dashboard/admin')
     } else if (user.role === 'mahasiswa') {
-      router.push('/dashboard/mahasiswa')
+      router.push('/profile/mahasiswa') // Redirect to profile view only
     } else if (user.role === 'perusahaan') {
       router.push('/dashboard/perusahaan')
     }
@@ -62,5 +62,21 @@ const handleLogout = async () => {
 }
 .font-roboto {
   font-family: 'Roboto', sans-serif;
+}
+
+.dashboard-gradient {
+  background: 
+    radial-gradient(ellipse 150% 80% at 50% 0%, 
+      #4c1d95 0%, 
+      #5b21b6 10%, 
+      #6b21a8 20%, 
+      #7c3aed 35%, 
+      #9333ea 50%, 
+      #a855f7 65%, 
+      #c084fc 80%, 
+      #ddd6fe 92%, 
+      #f3e8ff 98%, 
+      #ffffff 100%
+    );
 }
 </style>
