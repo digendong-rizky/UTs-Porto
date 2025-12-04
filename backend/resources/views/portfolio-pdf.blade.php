@@ -11,306 +11,442 @@
         }
         body {
             font-family: 'DejaVu Sans', Arial, sans-serif;
-            font-size: 12px;
-            line-height: 1.6;
-            color: #333;
+            font-size: 16px;
+            line-height: 1.4;
+            color: #000000;
+            background: #ffffff;
+        }
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            background: #ffffff;
+            position: relative;
+            padding: 0;
         }
         .header {
-            background: #ffffff;
-            color: #4c1d95;
-            padding: 30px;
-            text-align: center;
-            border-bottom: 3px solid #9333ea;
+            padding: 20mm 20mm 12mm 20mm;
+            border-bottom: 1px solid #cccccc;
+            position: relative;
         }
-        .header h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
-            color: #4c1d95;
+        .header-content {
+            display: table;
+            width: 100%;
+        }
+        .name-section {
+            display: table-cell;
+            vertical-align: middle;
+            width: 65%;
+        }
+        .name {
+            font-size: 48px;
             font-weight: bold;
+            color: #000000;
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
         }
-        .header p {
-            font-size: 14px;
-            color: #666;
+        .title {
+            font-size: 21px;
+            color: #333333;
+            font-weight: normal;
+        }
+        .contact-section {
+            display: table-cell;
+            vertical-align: top;
+            width: 35%;
+            text-align: right;
+            font-size: 15px;
+            color: #333333;
+            line-height: 1.8;
+            padding-top: 5mm;
+        }
+        .contact-item {
+            margin-bottom: 2mm;
+        }
+        .gradient-strip {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 12mm;
+            height: 100%;
+            background: linear-gradient(to bottom, #4c1d95 0%, #6b21a8 50%, #9333ea 100%);
         }
         .container {
-            padding: 30px;
+            padding: 10mm 20mm 15mm 20mm;
+            position: relative;
         }
         .section {
-            margin-bottom: 30px;
+            margin-bottom: 8mm;
+            page-break-inside: avoid;
         }
         .section-title {
-            font-size: 18px;
+            font-size: 23px;
             font-weight: bold;
-            color: #4c1d95;
-            margin-bottom: 15px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #9333ea;
+            color: #000000;
+            margin-bottom: 5mm;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        .profile-info {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 20px;
+        .experience-item {
+            margin-bottom: 6mm;
         }
-        .info-item {
-            margin-bottom: 10px;
-        }
-        .info-label {
+        .item-title {
             font-weight: bold;
-            color: #666;
-            margin-bottom: 3px;
+            font-size: 17px;
+            color: #000000;
+            margin-bottom: 1mm;
         }
-        .info-value {
-            color: #333;
+        .item-subtitle {
+            font-size: 16px;
+            color: #666666;
+            margin-bottom: 2mm;
         }
-        .description {
-            background: #f9fafb;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            border-left: 4px solid #9333ea;
+        .item-description {
+            font-size: 17px;
+            color: #333333;
+            line-height: 1.5;
+            margin-left: 4mm;
         }
-        .skills-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
+        .item-description ul {
+            list-style-type: disc;
+            margin-left: 6mm;
+            padding-left: 0;
         }
-        .skill-badge {
-            background: #e9d5ff;
-            color: #4c1d95;
-            padding: 5px 12px;
-            border-radius: 15px;
-            font-size: 11px;
-            font-weight: bold;
+        .item-description li {
+            margin-bottom: 1mm;
         }
-        .project-item, .certificate-item, .experience-item {
-            background: #f9fafb;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 5px;
-            border-left: 3px solid #9333ea;
+        .two-column {
+            display: table;
+            width: 100%;
+            margin-top: 3mm;
         }
-        .project-title, .certificate-title, .experience-title {
-            font-weight: bold;
-            font-size: 14px;
-            color: #4c1d95;
-            margin-bottom: 8px;
+        .column {
+            display: table-cell;
+            width: 50%;
+            vertical-align: top;
+            padding-right: 8mm;
         }
-        .project-description, .certificate-description, .experience-description {
-            color: #666;
-            margin-bottom: 8px;
+        .column:last-child {
+            padding-right: 0;
         }
-        .project-link {
-            color: #9333ea;
-            text-decoration: none;
-            font-size: 11px;
+        .certificate-item, .skill-item, .language-item, .education-item-simple {
+            font-size: 15px;
+            color: #333333;
+            margin-bottom: 2mm;
+            line-height: 1.5;
         }
         .footer {
+            position: absolute;
+            bottom: 8mm;
+            left: 20mm;
+            right: 20mm;
             text-align: center;
-            padding: 20px;
-            color: #999;
             font-size: 10px;
-            border-top: 1px solid #eee;
-            margin-top: 30px;
+            color: #666666;
+            border-top: 1px solid #cccccc;
+            padding-top: 3mm;
+        }
+        @media print {
+            .section {
+                page-break-inside: avoid;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>{{ $mahasiswa->user->name }}</h1>
-        @if($portofolio && $portofolio->nama)
-            <p>{{ $portofolio->nama }}</p>
-        @endif
-        @if($portofolio && $portofolio->bidang)
-            <p style="margin-top: 5px; font-size: 12px;">{{ strtoupper($portofolio->bidang) }}</p>
-        @endif
-    </div>
-
-    <div class="container">
-        <!-- Profile Information -->
-        <div class="section">
-            <div class="section-title">Informasi Profil</div>
-            <div class="profile-info">
-                @if($mahasiswa->nim)
-                <div class="info-item">
-                    <div class="info-label">NIM</div>
-                    <div class="info-value">{{ $mahasiswa->nim }}</div>
+    <div class="page">
+        <!-- Header -->
+        <div class="header">
+            <div class="gradient-strip"></div>
+            <div class="header-content">
+                <div class="name-section">
+                    <div class="name">{{ $mahasiswa->user->name }}</div>
+                    @if($portofolio && $portofolio->bidang)
+                        <div class="title">{{ strtoupper($portofolio->bidang) }}</div>
+                    @elseif($portofolio && $portofolio->nama)
+                        <div class="title">{{ $portofolio->nama }}</div>
+                    @endif
                 </div>
-                @endif
-                @if($mahasiswa->jurusan)
-                <div class="info-item">
-                    <div class="info-label">Jurusan</div>
-                    <div class="info-value">{{ $mahasiswa->jurusan }}</div>
+                <div class="contact-section">
+                    @if($mahasiswa->no_telp)
+                        <div class="contact-item">+{{ $mahasiswa->no_telp }}</div>
+                    @endif
+                    @if($mahasiswa->user->email)
+                        <div class="contact-item">{{ $mahasiswa->user->email }}</div>
+                    @endif
+                    @if($mahasiswa->alamat)
+                        <div class="contact-item">{{ $mahasiswa->alamat }}</div>
+                    @endif
+                    @if($mahasiswa->github)
+                        <div class="contact-item">{{ $mahasiswa->github }}</div>
+                    @endif
+                    @if($mahasiswa->linkedin)
+                        <div class="contact-item">{{ $mahasiswa->linkedin }}</div>
+                    @endif
                 </div>
-                @endif
-                @if($mahasiswa->fakultas)
-                <div class="info-item">
-                    <div class="info-label">Fakultas</div>
-                    <div class="info-value">{{ $mahasiswa->fakultas }}</div>
-                </div>
-                @endif
-                @if($mahasiswa->universitas)
-                <div class="info-item">
-                    <div class="info-label">Universitas</div>
-                    <div class="info-value">{{ $mahasiswa->universitas }}</div>
-                </div>
-                @endif
-                @if($mahasiswa->no_telp)
-                <div class="info-item">
-                    <div class="info-label">No. Telepon</div>
-                    <div class="info-value">{{ $mahasiswa->no_telp }}</div>
-                </div>
-                @endif
-                @if($mahasiswa->email)
-                <div class="info-item">
-                    <div class="info-label">Email</div>
-                    <div class="info-value">{{ $mahasiswa->user->email }}</div>
-                </div>
-                @endif
-                @if($mahasiswa->linkedin)
-                <div class="info-item">
-                    <div class="info-label">LinkedIn</div>
-                    <div class="info-value">{{ $mahasiswa->linkedin }}</div>
-                </div>
-                @endif
-                @if($mahasiswa->github)
-                <div class="info-item">
-                    <div class="info-label">GitHub</div>
-                    <div class="info-value">{{ $mahasiswa->github }}</div>
-                </div>
-                @endif
             </div>
         </div>
 
-        <!-- Description -->
-        @if(($portofolio && $portofolio->deskripsi) || $mahasiswa->deskripsi_diri)
-        <div class="section">
-            <div class="section-title">Deskripsi</div>
-            <div class="description">
-                {{ $portofolio && $portofolio->deskripsi ? $portofolio->deskripsi : $mahasiswa->deskripsi_diri }}
-            </div>
-        </div>
-        @endif
-
-        <!-- Skills -->
-        @if($portofolio && $portofolio->skills && count($portofolio->skills) > 0)
-        <div class="section">
-            <div class="section-title">Skills</div>
-            <div class="skills-grid">
-                @foreach($portofolio->skills as $skill)
-                <span class="skill-badge">{{ $skill->nama }} ({{ ucfirst($skill->level) }})</span>
+        <div class="container">
+            <!-- EXPERIENCE Section -->
+            @if($portofolio && $portofolio->experiences && count($portofolio->experiences) > 0)
+            <div class="section">
+                <div class="section-title">EXPERIENCE</div>
+                @foreach($portofolio->experiences as $experience)
+                <div class="experience-item">
+                    <div class="item-title">{{ $experience->judul }}</div>
+                    @if($experience->perusahaan)
+                        <div class="item-subtitle">{{ $experience->perusahaan }}</div>
+                    @endif
+                    @if($experience->tanggal_mulai)
+                        <div class="item-subtitle">
+                            {{ date('M Y', strtotime($experience->tanggal_mulai)) }}
+                            @if($experience->masih_berlangsung)
+                                - Present
+                            @elseif($experience->tanggal_selesai)
+                                - {{ date('M Y', strtotime($experience->tanggal_selesai)) }}
+                            @endif
+                            @if($experience->tipe)
+                                • {{ ucfirst($experience->tipe) }}
+                            @endif
+                        </div>
+                    @endif
+                    @if($experience->deskripsi)
+                        <div class="item-description">
+                            @php
+                                $desc = $experience->deskripsi;
+                                $lines = explode("\n", $desc);
+                                echo '<ul>';
+                                foreach($lines as $line) {
+                                    $line = trim($line);
+                                    if ($line) {
+                                        echo '<li>' . $line . '</li>';
+                                    }
+                                }
+                                echo '</ul>';
+                            @endphp
+                        </div>
+                    @endif
+                </div>
                 @endforeach
             </div>
-        </div>
-        @elseif($mahasiswa->skills && count($mahasiswa->skills) > 0)
-        <div class="section">
-            <div class="section-title">Skills</div>
-            <div class="skills-grid">
-                @foreach($mahasiswa->skills as $skill)
-                <span class="skill-badge">{{ $skill->nama }} ({{ ucfirst($skill->level) }})</span>
+            @elseif($mahasiswa->experiences && count($mahasiswa->experiences) > 0)
+            <div class="section">
+                <div class="section-title">EXPERIENCE</div>
+                @foreach($mahasiswa->experiences as $experience)
+                <div class="experience-item">
+                    <div class="item-title">{{ $experience->judul }}</div>
+                    @if($experience->perusahaan)
+                        <div class="item-subtitle">{{ $experience->perusahaan }}</div>
+                    @endif
+                    @if($experience->tanggal_mulai)
+                        <div class="item-subtitle">
+                            {{ date('M Y', strtotime($experience->tanggal_mulai)) }}
+                            @if($experience->masih_berlangsung)
+                                - Present
+                            @elseif($experience->tanggal_selesai)
+                                - {{ date('M Y', strtotime($experience->tanggal_selesai)) }}
+                            @endif
+                            @if($experience->tipe)
+                                • {{ ucfirst($experience->tipe) }}
+                            @endif
+                        </div>
+                    @endif
+                    @if($experience->deskripsi)
+                        <div class="item-description">
+                            @php
+                                $desc = $experience->deskripsi;
+                                $lines = explode("\n", $desc);
+                                echo '<ul>';
+                                foreach($lines as $line) {
+                                    $line = trim($line);
+                                    if ($line) {
+                                        echo '<li>' . $line . '</li>';
+                                    }
+                                }
+                                echo '</ul>';
+                            @endphp
+                        </div>
+                    @endif
+                </div>
                 @endforeach
             </div>
-        </div>
-        @endif
+            @endif
 
-        <!-- Projects -->
-        @if($portofolio && $portofolio->projects && count($portofolio->projects) > 0)
-        <div class="section">
-            <div class="section-title">Proyek</div>
-            @foreach($portofolio->projects as $project)
-            <div class="project-item">
-                <div class="project-title">{{ $project->judul }}</div>
-                @if($project->deskripsi)
-                <div class="project-description">{{ $project->deskripsi }}</div>
-                @endif
-                @if($project->teknologi)
-                <div class="info-value" style="margin-top: 5px; font-size: 11px; color: #666;">Teknologi: {{ $project->teknologi }}</div>
-                @endif
-                @if($project->link)
-                <div style="margin-top: 5px;"><a href="{{ $project->link }}" class="project-link">{{ $project->link }}</a></div>
-                @endif
+            <!-- EDUCATION Section -->
+            <div class="section">
+                <div class="section-title">EDUCATION</div>
+                <div class="two-column">
+                    <div class="column">
+                        @php
+                            $educationParts = [];
+                            if ($mahasiswa->universitas) {
+                                $educationParts[] = $mahasiswa->universitas;
+                            }
+                            if ($mahasiswa->fakultas) {
+                                $educationParts[] = $mahasiswa->fakultas;
+                            }
+                            if ($mahasiswa->jurusan) {
+                                $educationParts[] = $mahasiswa->jurusan;
+                            }
+                            if (count($educationParts) > 0) {
+                                echo '<div class="education-item-simple">' . implode(' - ', $educationParts) . '</div>';
+                            }
+                        @endphp
+                        @if($portofolio && $portofolio->education)
+                            @php
+                                $education = is_string($portofolio->education) ? json_decode($portofolio->education, true) : $portofolio->education;
+                                if (is_array($education)) {
+                                    $count = 0;
+                                    foreach($education as $edu) {
+                                        if ($count >= 2) break;
+                                        if (is_string($edu)) {
+                                            echo '<div class="education-item-simple">' . $edu . '</div>';
+                                        } else {
+                                            $eduParts = [];
+                                            if (!empty($edu['instansi'])) $eduParts[] = $edu['instansi'];
+                                            if (!empty($edu['jurusan'])) $eduParts[] = $edu['jurusan'];
+                                            $eduText = implode(' - ', $eduParts);
+                                            if (!empty($edu['tahun'])) {
+                                                $eduText .= ' (' . $edu['tahun'] . ')';
+                                            }
+                                            echo '<div class="education-item-simple">' . $eduText . '</div>';
+                                        }
+                                        $count++;
+                                    }
+                                } else {
+                                    echo '<div class="education-item-simple">' . $portofolio->education . '</div>';
+                                }
+                            @endphp
+                        @endif
+                    </div>
+                    <div class="column">
+                        @if($portofolio && $portofolio->education)
+                            @php
+                                $education = is_string($portofolio->education) ? json_decode($portofolio->education, true) : $portofolio->education;
+                                if (is_array($education) && count($education) > 2) {
+                                    $count = 0;
+                                    foreach($education as $edu) {
+                                        if ($count < 2) {
+                                            $count++;
+                                            continue;
+                                        }
+                                        if ($count >= 4) break;
+                                        if (is_string($edu)) {
+                                            echo '<div class="education-item-simple">' . $edu . '</div>';
+                                        } else {
+                                            $eduParts = [];
+                                            if (!empty($edu['instansi'])) $eduParts[] = $edu['instansi'];
+                                            if (!empty($edu['jurusan'])) $eduParts[] = $edu['jurusan'];
+                                            $eduText = implode(' - ', $eduParts);
+                                            if (!empty($edu['tahun'])) {
+                                                $eduText .= ' (' . $edu['tahun'] . ')';
+                                            }
+                                            echo '<div class="education-item-simple">' . $eduText . '</div>';
+                                        }
+                                        $count++;
+                                    }
+                                }
+                            @endphp
+                        @endif
+                    </div>
+                </div>
             </div>
-            @endforeach
-        </div>
-        @elseif($mahasiswa->projects && count($mahasiswa->projects) > 0)
-        <div class="section">
-            <div class="section-title">Proyek</div>
-            @foreach($mahasiswa->projects as $project)
-            <div class="project-item">
-                <div class="project-title">{{ $project->judul }}</div>
-                @if($project->deskripsi)
-                <div class="project-description">{{ $project->deskripsi }}</div>
-                @endif
-                @if($project->teknologi)
-                <div class="info-value" style="margin-top: 5px; font-size: 11px; color: #666;">Teknologi: {{ $project->teknologi }}</div>
-                @endif
-                @if($project->link)
-                <div style="margin-top: 5px;"><a href="{{ $project->link }}" class="project-link">{{ $project->link }}</a></div>
-                @endif
-            </div>
-            @endforeach
-        </div>
-        @endif
 
-        <!-- Certificates -->
-        @if($portofolio && $portofolio->certificates && count($portofolio->certificates) > 0)
-        <div class="section">
-            <div class="section-title">Sertifikat</div>
-            @foreach($portofolio->certificates as $certificate)
-            <div class="certificate-item">
-                <div class="certificate-title">{{ $certificate->nama }}</div>
-                @if($certificate->deskripsi)
-                <div class="certificate-description">{{ $certificate->deskripsi }}</div>
-                @endif
+            <!-- CERTIFICATES Section -->
+            @if($portofolio && $portofolio->certificates && count($portofolio->certificates) > 0)
+            <div class="section">
+                <div class="section-title">CERTIFICATES</div>
+                @foreach($portofolio->certificates as $certificate)
+                <div class="certificate-item">
+                    <strong>{{ $certificate->nama }}</strong>
+                    @if($certificate->penerbit)
+                        • {{ $certificate->penerbit }}
+                    @endif
+                    @if($certificate->tanggal_terbit)
+                        • {{ date('M Y', strtotime($certificate->tanggal_terbit)) }}
+                    @endif
+                </div>
+                @endforeach
             </div>
-            @endforeach
-        </div>
-        @elseif($mahasiswa->certificates && count($mahasiswa->certificates) > 0)
-        <div class="section">
-            <div class="section-title">Sertifikat</div>
-            @foreach($mahasiswa->certificates as $certificate)
-            <div class="certificate-item">
-                <div class="certificate-title">{{ $certificate->nama }}</div>
-                @if($certificate->deskripsi)
-                <div class="certificate-description">{{ $certificate->deskripsi }}</div>
-                @endif
+            @elseif($mahasiswa->certificates && count($mahasiswa->certificates) > 0)
+            <div class="section">
+                <div class="section-title">CERTIFICATES</div>
+                @foreach($mahasiswa->certificates as $certificate)
+                <div class="certificate-item">
+                    <strong>{{ $certificate->nama }}</strong>
+                    @if($certificate->penerbit)
+                        • {{ $certificate->penerbit }}
+                    @endif
+                    @if($certificate->tanggal_terbit)
+                        • {{ date('M Y', strtotime($certificate->tanggal_terbit)) }}
+                    @endif
+                </div>
+                @endforeach
             </div>
-            @endforeach
-        </div>
-        @endif
+            @endif
 
-        <!-- Experiences -->
-        @if($portofolio && $portofolio->experiences && count($portofolio->experiences) > 0)
-        <div class="section">
-            <div class="section-title">Pengalaman</div>
-            @foreach($portofolio->experiences as $experience)
-            <div class="experience-item">
-                <div class="experience-title">{{ $experience->judul }}</div>
-                @if($experience->deskripsi)
-                <div class="experience-description">{{ $experience->deskripsi }}</div>
-                @endif
+            <!-- SKILLS Section -->
+            @if($portofolio && $portofolio->skills && count($portofolio->skills) > 0)
+            <div class="section">
+                <div class="section-title">SKILLS</div>
+                <div class="two-column">
+                    <div class="column">
+                        @foreach(array_slice($portofolio->skills->toArray(), 0, ceil(count($portofolio->skills) / 2)) as $skill)
+                        <div class="skill-item"><strong>{{ $skill['nama'] }}</strong> ({{ ucfirst($skill['level']) }})</div>
+                        @endforeach
+                    </div>
+                    <div class="column">
+                        @foreach(array_slice($portofolio->skills->toArray(), ceil(count($portofolio->skills) / 2)) as $skill)
+                        <div class="skill-item"><strong>{{ $skill['nama'] }}</strong> ({{ ucfirst($skill['level']) }})</div>
+                        @endforeach
+                    </div>
+                </div>
             </div>
-            @endforeach
-        </div>
-        @elseif($mahasiswa->experiences && count($mahasiswa->experiences) > 0)
-        <div class="section">
-            <div class="section-title">Pengalaman</div>
-            @foreach($mahasiswa->experiences as $experience)
-            <div class="experience-item">
-                <div class="experience-title">{{ $experience->judul }}</div>
-                @if($experience->deskripsi)
-                <div class="experience-description">{{ $experience->deskripsi }}</div>
-                @endif
+            @elseif($mahasiswa->skills && count($mahasiswa->skills) > 0)
+            <div class="section">
+                <div class="section-title">SKILLS</div>
+                <div class="two-column">
+                    <div class="column">
+                        @foreach(array_slice($mahasiswa->skills->toArray(), 0, ceil(count($mahasiswa->skills) / 2)) as $skill)
+                        <div class="skill-item"><strong>{{ $skill['nama'] }}</strong> ({{ ucfirst($skill['level']) }})</div>
+                        @endforeach
+                    </div>
+                    <div class="column">
+                        @foreach(array_slice($mahasiswa->skills->toArray(), ceil(count($mahasiswa->skills) / 2)) as $skill)
+                        <div class="skill-item"><strong>{{ $skill['nama'] }}</strong> ({{ ucfirst($skill['level']) }})</div>
+                        @endforeach
+                    </div>
+                </div>
             </div>
-            @endforeach
-        </div>
-        @endif
-    </div>
+            @endif
 
-    <div class="footer">
-        <p>Dibuat melalui Porto Connect - {{ date('d F Y') }}</p>
+            <!-- LANGUAGES Section -->
+            @if($portofolio && $portofolio->language)
+            <div class="section">
+                <div class="section-title">LANGUAGES</div>
+                @php
+                    $languages = is_string($portofolio->language) ? json_decode($portofolio->language, true) : $portofolio->language;
+                    if (is_array($languages)) {
+                        foreach($languages as $lang) {
+                            if (is_string($lang)) {
+                                echo '<div class="language-item">' . $lang . '</div>';
+                            } else {
+                                $langText = ($lang['nama'] ?? '') . ($lang['level'] ? ' ' . ucfirst($lang['level']) : '');
+                                echo '<div class="language-item">' . $langText . '</div>';
+                            }
+                        }
+                    } else {
+                        echo '<div class="language-item">' . $portofolio->language . '</div>';
+                    }
+                @endphp
+            </div>
+            @endif
+        </div>
+
+        <div class="footer">
+            <p>Generated via Porto Connect - {{ date('F Y') }}</p>
+        </div>
     </div>
 </body>
 </html>
-
-
