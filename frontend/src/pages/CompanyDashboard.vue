@@ -307,18 +307,16 @@ onMounted(async () => {
 })
 
 // Portofolio Tab Functions
-const ensureAllPortfolios = async () => {
-  if (allPortfoliosPortfolio.value.length) return
-  const allResponse = await axios.get('/api/portfolios/public')
-  allPortfoliosPortfolio.value = allResponse.data.portfolios || []
-}
-
 const loadPortfoliosPortfolio = async (bidang = null) => {
   try {
-    await ensureAllPortfolios()
-    portfoliosPortfolio.value = bidang
-      ? allPortfoliosPortfolio.value.filter(p => p.bidang === bidang)
-      : allPortfoliosPortfolio.value
+    const params = { per_page: 30 }
+    if (bidang) params.bidang = bidang
+
+    const response = await axios.get('/api/portfolios/public', { params })
+    const list = response.data?.portfolios || response.data?.data || []
+
+    allPortfoliosPortfolio.value = list
+    portfoliosPortfolio.value = list
     currentPage.value = 1
   } catch (error) {
     logger.error('Error loading portfolios:', error)
@@ -332,11 +330,13 @@ const filterByBidangPortfolio = async (bidang) => {
   // If there are search results, filter them by bidang
   if (searchResults.value.length > 0) {
     const studentIds = searchResults.value.map(s => s.id)
-    await ensureAllPortfolios()
-    const source = bidang
-      ? allPortfoliosPortfolio.value.filter(p => p.bidang === bidang)
-      : allPortfoliosPortfolio.value
-    
+    const params = { per_page: 30 }
+    if (bidang) params.bidang = bidang
+
+    const response = await axios.get('/api/portfolios/public', { params })
+    const source = response.data?.portfolios || response.data?.data || []
+
+    allPortfoliosPortfolio.value = source
     portfoliosPortfolio.value = source.filter(p => 
       studentIds.includes(p.mahasiswa_id)
     )

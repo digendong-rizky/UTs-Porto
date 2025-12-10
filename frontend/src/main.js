@@ -10,7 +10,8 @@ app.use(createPinia())
 app.use(router)
 app.mount('#app')
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL = 'http://localhost:8000';
+// Use environment variable for API URL, fallback to localhost for development
+axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 // Set auth token if available
 const token = localStorage.getItem('token');

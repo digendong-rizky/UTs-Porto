@@ -300,14 +300,34 @@ class PortfolioController extends Controller
     {
         try {
             $bidang = $request->query('bidang');
-            $cacheKey = $bidang ? 'public_portfolios_' . Str::slug($bidang) : 'public_portfolios_all';
-            
-            // Cache for 5 minutes (300 seconds)
-            $portfolios = Cache::remember($cacheKey, 300, function () use ($bidang) {
-                return Portofolio::getPublicPortfolios($bidang);
-            });
+            $perPage = (int) $request->query('per_page', 0);
+            $perPage = $perPage > 0 ? min($perPage, 50) : 0; // clamp to avoid huge pages
+            $page = (int) $request->query('page', 1);
 
-            return response()->json(['portfolios' => $portfolios]);
+            // When no pagination requested, keep cached full list (legacy behaviour)
+            if ($perPage === 0) {
+                $cacheKey = $bidang ? 'public_portfolios_' . Str::slug($bidang) : 'public_portfolios_all';
+                
+                $portfolios = Cache::remember($cacheKey, 300, function () use ($bidang) {
+                    return Portofolio::getPublicPortfolios($bidang);
+                });
+
+                return response()->json(['portfolios' => $portfolios]);
+            }
+
+            // With pagination: skip cache to avoid explosion of cache keys
+            $query = Portofolio::publicQuery($bidang);
+            $portfolios = $query->paginate($perPage, ['*'], 'page', $page);
+
+            return response()->json([
+                'portfolios' => $portfolios->items(),
+                'meta' => [
+                    'current_page' => $portfolios->currentPage(),
+                    'last_page' => $portfolios->lastPage(),
+                    'per_page' => $portfolios->perPage(),
+                    'total' => $portfolios->total(),
+                ],
+            ]);
         } catch (\Exception $e) {
             Log::error('Error in getPublicPortfolios: ' . $e->getMessage());
             

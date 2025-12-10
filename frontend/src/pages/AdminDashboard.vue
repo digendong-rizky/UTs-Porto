@@ -598,18 +598,15 @@ const loadUsers = async () => {
   }
 }
 
-const ensureAllPortfolios = async () => {
-  if (allPortfolios.value.length) return
-      const allResponse = await axios.get('/api/admin/portfolios')
-      allPortfolios.value = allResponse.data.portfolios || []
-    }
-
 const loadPortfolios = async (bidang = null) => {
   try {
-    await ensureAllPortfolios()
-    portfolios.value = bidang
-      ? allPortfolios.value.filter(p => p.bidang === bidang)
-      : allPortfolios.value
+    const params = { per_page: 30 }
+    if (bidang) params.bidang = bidang
+
+    const response = await axios.get('/api/admin/portfolios', { params })
+    const list = response.data?.portfolios || response.data?.data || []
+    portfolios.value = list
+    allPortfolios.value = list
     currentPagePortfolio.value = 1
   } catch (error) {
     logger.error('Error loading portfolios:', error)

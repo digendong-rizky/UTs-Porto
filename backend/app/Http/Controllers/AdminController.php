@@ -251,18 +251,28 @@ class AdminController extends Controller
     public function getPortfolios(Request $request)
     {
         $bidang = $request->has('bidang') && $request->bidang ? $request->bidang : null;
-        
-        $portfolios = Portofolio::with([
-                'mahasiswa:id,user_id,universitas,jurusan,fakultas',
-                'mahasiswa.user:id,name,email',
-                'skills:id,portofolio_id,nama,level'
-            ])
-            ->select('id', 'mahasiswa_id', 'nama', 'bidang', 'deskripsi', 'public_link', 'is_public', 'created_at', 'updated_at')
-            ->byBidang($bidang)
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $perPage = (int) $request->query('per_page', 0);
+        $perPage = $perPage > 0 ? min($perPage, 50) : 0;
+        $page = (int) $request->query('page', 1);
 
-        return response()->json(['portfolios' => $portfolios]);
+        $query = Portofolio::publicQuery($bidang);
+
+        if ($perPage === 0) {
+            $portfolios = $query->get();
+            return response()->json(['portfolios' => $portfolios]);
+        }
+
+        $portfolios = $query->paginate($perPage, ['*'], 'page', $page);
+
+        return response()->json([
+            'portfolios' => $portfolios->items(),
+            'meta' => [
+                'current_page' => $portfolios->currentPage(),
+                'last_page' => $portfolios->lastPage(),
+                'per_page' => $portfolios->perPage(),
+                'total' => $portfolios->total(),
+            ],
+        ]);
     }
 
     /**

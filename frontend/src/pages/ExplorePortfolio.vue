@@ -219,24 +219,16 @@ onMounted(async () => {
   await loadPortfolios()
 })
 
-const ensureAllPortfolios = async () => {
-  if (allPortfolios.value.length) return
-  const response = await axios.get('/api/portfolios/public')
-  if (response.data && Array.isArray(response.data.portfolios)) {
-    allPortfolios.value = response.data.portfolios
-  } else if (Array.isArray(response.data)) {
-    allPortfolios.value = response.data
-  } else {
-    allPortfolios.value = []
-  }
-}
-
 const loadPortfolios = async (bidang = null) => {
   try {
-    await ensureAllPortfolios()
-    portfolios.value = bidang
-      ? allPortfolios.value.filter(p => p.bidang === bidang)
-      : allPortfolios.value
+    const params = { per_page: 30 }
+    if (bidang) params.bidang = bidang
+
+    const response = await axios.get('/api/portfolios/public', { params })
+
+    const list = response.data?.portfolios || response.data?.data || []
+    portfolios.value = list
+    allPortfolios.value = list // keep for counters + future reuse
     currentPage.value = 1
   } catch (error) {
     logger.error('Error loading portfolios:', error)

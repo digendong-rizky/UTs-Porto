@@ -62,11 +62,11 @@ class Portofolio extends Model
     }
 
     /**
-     * Get all public portfolios with relationships (optimized)
+     * Base query for public portfolios (shared)
      * @param string|null $bidang Filter by bidang (backend, frontend, fullstack, QATester)
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return \Illuminate\Database\Eloquent\Builder
      */
-    public static function getPublicPortfolios($bidang = null)
+    public static function publicQuery($bidang = null)
     {
         $query = static::with([
                 'mahasiswa:id,user_id,nim,jurusan,fakultas,universitas',
@@ -80,7 +80,17 @@ class Portofolio extends Model
             $query->where('bidang', $bidang);
         }
 
-        return $query->orderBy('created_at', 'desc')->get();
+        return $query->orderBy('created_at', 'desc');
+    }
+
+    /**
+     * Get all public portfolios with relationships (optimized)
+     * @param string|null $bidang Filter by bidang (backend, frontend, fullstack, QATester)
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public static function getPublicPortfolios($bidang = null)
+    {
+        return static::publicQuery($bidang)->get();
     }
 
     /**
