@@ -418,6 +418,7 @@ const searchStudents = async () => {
       )
       
       // Additional filter: if keyword is searched, filter portfolios by keyword (nama, deskripsi, bidang)
+      // Note: jurusan/fakultas/universitas tidak perlu difilter lagi karena mahasiswa sudah sesuai
       if (searchForm.value.keyword && searchForm.value.keyword.trim() !== '') {
         const searchKeyword = searchForm.value.keyword.toLowerCase().trim()
         filteredPortfolios = filteredPortfolios.filter(portfolio => {
@@ -451,42 +452,24 @@ const searchStudents = async () => {
         logger.debug('After skill filter:', filteredPortfolios.length)
       }
       
-      // Additional filter: if jurusan is searched, filter portfolios by jurusan
-      if (searchForm.value.jurusan && searchForm.value.jurusan.trim() !== '') {
-        const searchJurusan = searchForm.value.jurusan.toLowerCase().trim()
-        filteredPortfolios = filteredPortfolios.filter(portfolio => {
-          const portfolioJurusan = (portfolio.mahasiswa?.jurusan || '').toLowerCase()
-          return portfolioJurusan.includes(searchJurusan)
-        })
-        logger.debug('After jurusan filter:', filteredPortfolios.length)
-      }
-      
-      // Additional filter: if fakultas is searched, filter portfolios by fakultas
-      if (searchForm.value.fakultas && searchForm.value.fakultas.trim() !== '') {
-        const searchFakultas = searchForm.value.fakultas.toLowerCase().trim()
-        filteredPortfolios = filteredPortfolios.filter(portfolio => {
-          const portfolioFakultas = (portfolio.mahasiswa?.fakultas || '').toLowerCase()
-          return portfolioFakultas.includes(searchFakultas)
-        })
-        logger.debug('After fakultas filter:', filteredPortfolios.length)
-      }
-      
-      // Additional filter: if universitas is searched, filter portfolios by universitas
-      if (searchForm.value.universitas && searchForm.value.universitas.trim() !== '') {
-        const searchUniversitas = searchForm.value.universitas.toLowerCase().trim()
-        filteredPortfolios = filteredPortfolios.filter(portfolio => {
-          const portfolioUniversitas = (portfolio.mahasiswa?.universitas || '').toLowerCase()
-          return portfolioUniversitas.includes(searchUniversitas)
-        })
-        logger.debug('After universitas filter:', filteredPortfolios.length)
-      }
+      // Note: Tidak perlu filter lagi berdasarkan jurusan/fakultas/universitas
+      // karena mahasiswa yang ditemukan sudah sesuai dengan kriteria tersebut
+      // Portofolio mereka otomatis sesuai karena dimiliki oleh mahasiswa yang sesuai
       
       portfoliosPortfolio.value = filteredPortfolios
       
       logger.debug('Filtered portfolios:', portfoliosPortfolio.value.length)
       
       if (portfoliosPortfolio.value.length === 0) {
-        showWarning(`Ditemukan ${students.length} mahasiswa, tapi tidak ada portofolio yang sesuai dengan kriteria pencarian`)
+        // Check if students have any portfolios at all
+        const studentsWithPortfolios = students.filter(s => s.portofolios && s.portofolios.length > 0)
+        if (studentsWithPortfolios.length === 0) {
+          showWarning(`Ditemukan ${students.length} mahasiswa, tapi mereka belum memiliki portofolio publik`)
+        } else {
+          showWarning(`Ditemukan ${students.length} mahasiswa, tapi tidak ada portofolio yang sesuai dengan kriteria pencarian tambahan (keyword/skill/bidang)`)
+        }
+      } else {
+        showSuccess(`Ditemukan ${portfoliosPortfolio.value.length} portofolio dari ${students.length} mahasiswa`)
       }
     } else {
       // If no search results, reload with current bidang filter
@@ -522,11 +505,12 @@ const viewPortfolio = (portfolio) => {
 const handleLogout = async () => {
   try {
     await axios.post('/api/logout')
-    localStorage.removeItem('token')
-    router.push('/login')
-  } catch (error) {
-    localStorage.removeItem('token')
-    router.push('/login')
+  } catch (err) {
+    logger.warn('Logout error:', err)
+  } finally {
+    try { localStorage.removeItem('token') } catch (e) { logger.warn('localStorage remove error', e) }
+    delete axios.defaults.headers.common['Authorization']
+    router.replace('/login')
   }
 }
 </script>

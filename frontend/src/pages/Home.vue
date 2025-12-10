@@ -176,7 +176,7 @@ const handleLogout = async () => {
     try { localStorage.removeItem('token') } catch (e) { logger.warn('localStorage remove error', e) }
     delete axios.defaults.headers.common['Authorization']
     currentUser.value = null
-    router.push('/')
+    router.replace('/login')
   }
 }
 </script>

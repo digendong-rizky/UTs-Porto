@@ -46,12 +46,12 @@ onMounted(async () => {
 const handleLogout = async () => {
   try {
     await axios.post('/api/logout')
-    localStorage.removeItem('token')
-    router.push('/login')
-  } catch (error) {
-    logger.error('Gagal logout:', error)
-    localStorage.removeItem('token')
-    router.push('/login')
+  } catch (err) {
+    logger.warn('Logout error:', err)
+  } finally {
+    try { localStorage.removeItem('token') } catch (e) { logger.warn('localStorage remove error', e) }
+    delete axios.defaults.headers.common['Authorization']
+    router.replace('/login')
   }
 }
 </script>
