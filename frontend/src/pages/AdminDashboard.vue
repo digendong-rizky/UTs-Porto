@@ -14,8 +14,8 @@
 
         <div class="nav-right">
           <button class="user-name logout" @click="handleLogout">Logout</button>
+          </div>
         </div>
-      </div>
     </header>
 
     <!-- SEARCH ROW -->
@@ -72,7 +72,7 @@
           <div class="table-wrapper">
             <table class="data-table">
               <thead>
-                <tr>
+              <tr>
                   <th>Nama</th>
                   <th>Email</th>
                   <th>Role</th>
@@ -602,7 +602,7 @@ const loadPortfolios = async (bidang = null) => {
   try {
     const params = { per_page: 30 }
     if (bidang) params.bidang = bidang
-
+    
     const response = await axios.get('/api/admin/portfolios', { params })
     const list = response.data?.portfolios || response.data?.data || []
     portfolios.value = list

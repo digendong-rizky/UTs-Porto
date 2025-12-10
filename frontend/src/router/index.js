@@ -96,7 +96,7 @@ router.beforeEach(async (to, from, next) => {
   const token = localStorage.getItem('token')
   
   // Jika route memerlukan auth tapi tidak ada token
-  const publicRoutes = ['/', '/login', '/explore', '/portfolio/:publicLink', '/auth/callback']
+  const publicRoutes = ['/', '/login', '/explore', '/portfolio/:publicLink', '/auth/callback', '/mahasiswa/:id/profile']
   const isPublicRoute = publicRoutes.some(route => {
     if (route.includes(':')) {
       const routePattern = route.replace(/:[^/]+/g, '[^/]+')

@@ -6,38 +6,38 @@
         <div class="nav-left">
           <span class="brand">Porto Connect</span>
           <img src="@/assets/logo-soegija.png" alt="soegija" class="nav-logo" />
-        </div>
+            </div>
 
         <div class="nav-center">
           <router-link to="/" class="nav-link">Home</router-link>
-          <router-link
+          <router-link 
             v-if="!currentUser || (currentUser.role !== 'perusahaan' && currentUser.role !== 'admin')"
-            to="/explore"
+            to="/explore" 
             class="nav-link active"
           >
             Portofolio
           </router-link>
-        </div>
+          </div>
 
         <div class="nav-right">
           <template v-if="currentUser">
-            <router-link
-              v-if="currentUser.role === 'admin'"
-              to="/dashboard/admin"
+            <router-link 
+              v-if="currentUser.role === 'admin'" 
+              to="/dashboard/admin" 
               class="user-name"
             >
               Dashboard
             </router-link>
-            <router-link
+            <router-link 
               v-else-if="currentUser.role === 'mahasiswa'"
-              to="/profile/mahasiswa"
+              to="/profile/mahasiswa" 
               class="user-name"
             >
               Dashboard
             </router-link>
-            <router-link
+            <router-link 
               v-else
-              to="/dashboard/perusahaan"
+              to="/dashboard/perusahaan" 
               class="user-name"
             >
               Dashboard
@@ -72,7 +72,7 @@
           <div
             class="sidebar-item"
             :class="{ active: selectedBidang === null }"
-            @click="filterByBidang(null)"
+                @click="filterByBidang(null)"
           >
             <span class="si-text">Semua</span>
             <span class="si-count">{{ totalPortfolios }}</span>
@@ -80,7 +80,7 @@
           <div
             class="sidebar-item"
             :class="{ active: selectedBidang === 'backend' }"
-            @click="filterByBidang('backend')"
+                @click="filterByBidang('backend')"
           >
             <span class="si-text">Backend</span>
             <span class="si-count">{{ getCountByBidang('backend') }}</span>
@@ -88,7 +88,7 @@
           <div
             class="sidebar-item"
             :class="{ active: selectedBidang === 'frontend' }"
-            @click="filterByBidang('frontend')"
+                @click="filterByBidang('frontend')"
           >
             <span class="si-text">Frontend</span>
             <span class="si-count">{{ getCountByBidang('frontend') }}</span>
@@ -96,7 +96,7 @@
           <div
             class="sidebar-item"
             :class="{ active: selectedBidang === 'fullstack' }"
-            @click="filterByBidang('fullstack')"
+                @click="filterByBidang('fullstack')"
           >
             <span class="si-text">Fullstack</span>
             <span class="si-count">{{ getCountByBidang('fullstack') }}</span>
@@ -104,13 +104,13 @@
           <div
             class="sidebar-item"
             :class="{ active: selectedBidang === 'QATester' }"
-            @click="filterByBidang('QATester')"
+                @click="filterByBidang('QATester')"
           >
             <span class="si-text">QA Tester</span>
             <span class="si-count">{{ getCountByBidang('QATester') }}</span>
           </div>
         </div>
-      </aside>
+        </aside>
 
       <!-- Cards panel -->
       <section class="cards-panel">
@@ -145,14 +145,14 @@
 
           <!-- Pagination -->
           <div v-if="filteredPortfolios.length > itemsPerPage" class="pagination">
-            <button
+            <button 
               @click="currentPage = Math.max(1, currentPage - 1)"
               :disabled="currentPage === 1"
             >
               ←
             </button>
             <span>{{ currentPage }} / {{ totalPages }}</span>
-            <button
+            <button 
               @click="currentPage = Math.min(totalPages, currentPage + 1)"
               :disabled="currentPage === totalPages"
             >
@@ -161,7 +161,7 @@
           </div>
         </div>
       </section>
-    </main>
+        </main>
 
     <!-- FOOTER -->
     <footer class="page-footer">
@@ -225,7 +225,7 @@ const loadPortfolios = async (bidang = null) => {
     if (bidang) params.bidang = bidang
 
     const response = await axios.get('/api/portfolios/public', { params })
-
+    
     const list = response.data?.portfolios || response.data?.data || []
     portfolios.value = list
     allPortfolios.value = list // keep for counters + future reuse

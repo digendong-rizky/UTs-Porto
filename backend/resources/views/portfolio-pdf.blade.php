@@ -151,38 +151,38 @@
         <div class="header-left">
             <div class="name">{{ $mahasiswa->user->name }}</div>
             <div class="role">{{ $roleTitle }}</div>
-        </div>
+                </div>
         <div class="header-right">
             <div class="contacts">
                 @if($mahasiswa->no_telp)
                     <div class="contact-item">
                         <span class="contact-label">Phone:</span>
                         <span class="contact-value">{{ $mahasiswa->no_telp }}</span>
-                    </div>
+                </div>
                 @endif
                 @if($mahasiswa->user->email)
                     <div class="contact-item">
                         <span class="contact-label">Email:</span>
                         <span class="contact-value">{{ $mahasiswa->user->email }}</span>
-                    </div>
+                </div>
                 @endif
                 @if($address)
                     <div class="contact-item">
                         <span class="contact-label">Address:</span>
                         <span class="contact-value">{{ $address }}</span>
-                    </div>
+                </div>
                 @endif
                 @if($mahasiswa->github)
                     <div class="contact-item">
                         <span class="contact-label">Website:</span>
                         <span class="contact-value">{{ $mahasiswa->github }}</span>
-                    </div>
+                </div>
                 @endif
                 @if($mahasiswa->linkedin)
                     <div class="contact-item">
                         <span class="contact-label">LinkedIn:</span>
                         <span class="contact-value">{{ $mahasiswa->linkedin }}</span>
-                    </div>
+                </div>
                 @endif
             </div>
         </div>
@@ -205,18 +205,18 @@
                     {{ $exp->perusahaan ?? '' }}
                     @if($start || $end)
                         · {{ trim($start.' - '.$end, ' -') }}
-                    @endif
+        @endif
                     @if($exp->tipe)
                         · {{ ucfirst($exp->tipe) }}
-                    @endif
-                </div>
+                @endif
+            </div>
                 @if($exp->deskripsi)
                     <div class="bullet">• {{ $exp->deskripsi }}</div>
                 @endif
             </div>
-        @endforeach
+            @endforeach
     </section>
-    @endif
+        @endif
 
     {{-- EDUCATION --}}
     @if($mahasiswa->universitas || $mahasiswa->fakultas || $mahasiswa->jurusan)
@@ -229,7 +229,7 @@
             </div>
         </div>
     </section>
-    @endif
+                @endif
 
     {{-- LANGUAGES --}}
     @if($languageList->count())
@@ -241,7 +241,7 @@
             @endforeach
         </div>
     </section>
-    @endif
+        @endif
 
     {{-- CERTIFICATES & SKILLS SIDE BY SIDE (separate sections) --}}
     @if($certificateList->count() || $skillList->count())
@@ -257,9 +257,9 @@
                         {{ $cert->penerbit ?? '' }}
                         @if($cert->tanggal_terbit)
                             • {{ \Carbon\Carbon::parse($cert->tanggal_terbit)->format('M Y') }}
-                        @endif
+                @endif
                     </div>
-                </div>
+            </div>
             @endforeach
             @endif
         </div>
@@ -275,7 +275,7 @@
         </div>
     </div>
     @endif
-</div>
+    </div>
 </body>
 </html>
 

@@ -11,14 +11,14 @@
 
         <div class="nav-center">
           <router-link to="/" class="nav-link active">Home</router-link>
-          <router-link
+            <router-link 
             v-if="!currentUser || currentUser.role === 'mahasiswa'"
             to="/explore"
             class="nav-link"
           >
             Portofolio
-          </router-link>
-        </div>
+            </router-link>
+          </div>
 
         <div class="nav-right">
           <template v-if="currentUser">

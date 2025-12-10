@@ -314,7 +314,7 @@ const loadPortfoliosPortfolio = async (bidang = null) => {
 
     const response = await axios.get('/api/portfolios/public', { params })
     const list = response.data?.portfolios || response.data?.data || []
-
+    
     allPortfoliosPortfolio.value = list
     portfoliosPortfolio.value = list
     currentPage.value = 1
@@ -335,7 +335,7 @@ const filterByBidangPortfolio = async (bidang) => {
 
     const response = await axios.get('/api/portfolios/public', { params })
     const source = response.data?.portfolios || response.data?.data || []
-
+    
     allPortfoliosPortfolio.value = source
     portfoliosPortfolio.value = source.filter(p => 
       studentIds.includes(p.mahasiswa_id)

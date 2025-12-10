@@ -363,7 +363,7 @@ const downloadPDF = async () => {
     
     let res
     
-    // Try with auth first if user is logged in
+    // Try with auth first if user is logged in and is owner
     if (token && isOwner.value) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
       try {
@@ -374,15 +374,21 @@ const downloadPDF = async () => {
         })
       } catch (error) {
         // If auth fails, try public endpoint
+        logger.warn('Auth export failed, trying public endpoint:', error)
         res = await axios.post(`/api/portfolio/${publicLink}/export-pdf`, {}, {
           responseType: 'blob'
         })
       }
     } else {
-    // Use public endpoint
+      // Use public endpoint for non-logged in users or non-owners
       res = await axios.post(`/api/portfolio/${publicLink}/export-pdf`, {}, {
         responseType: 'blob'
       })
+    }
+    
+    // Check if response is actually a blob
+    if (!res.data || res.data.size === 0) {
+      throw new Error('Response kosong atau tidak valid')
     }
     
     // Create blob URL and trigger download
@@ -390,7 +396,8 @@ const downloadPDF = async () => {
     const url = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = `portfolio_${portfolio.value?.nama || portfolio.value?.mahasiswa?.user?.name || 'portfolio'}_${Date.now()}.pdf`
+    const filename = `portfolio_${portfolio.value?.nama || portfolio.value?.mahasiswa?.user?.name || 'portfolio'}_${Date.now()}.pdf`
+    link.download = filename
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -398,7 +405,11 @@ const downloadPDF = async () => {
     
     showSuccess('PDF berhasil diunduh')
   } catch (error) {
-    showError('Gagal membuat PDF: ' + (error.response?.data?.message || 'Unknown error'))
+    logger.error('Download PDF error:', error)
+    const errorMessage = error.response?.data?.message || 
+                        error.message || 
+                        'Gagal membuat PDF. Silakan coba lagi.'
+    showError('Gagal membuat PDF: ' + errorMessage)
   }
 }
 </script>
