@@ -56,7 +56,9 @@ import { useSweetAlert } from '@/composables/useSweetAlert'
 
 const { showError } = useSweetAlert()
 
-const googleLoginUrl = ref('http://localhost:8000/auth/google')
+// Use environment variable for API URL, fallback to localhost for development
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+const googleLoginUrl = ref(`${apiBaseUrl}/auth/google`)
 const isProcessingCallback = ref(false)
 
 const route = useRoute()

@@ -119,12 +119,24 @@ class GoogleAuthController extends Controller
             // Create Sanctum token for API access (no need for Auth::login)
             $token = $user->createToken('auth_token')->plainTextToken;
 
-            $frontendUrl = env('FRONTEND_URL', 'http://localhost:5173');
+            // Use config() instead of env() to get cached value, fallback to env() if not cached
+            $frontendUrl = config('cors.allowed_origins.0') ?? env('FRONTEND_URL', 'https://porto-connect-mu.vercel.app');
+            // Remove quotes if present and ensure it's a valid URL
+            $frontendUrl = trim($frontendUrl, '"\'');
+            if (empty($frontendUrl) || $frontendUrl === 'http://localhost:5173') {
+                $frontendUrl = 'https://porto-connect-mu.vercel.app';
+            }
             return redirect($frontendUrl . '/auth/callback?token=' . urlencode($token));
 
         } catch (\Exception $e) {
             report($e);
-            $frontendUrl = env('FRONTEND_URL', 'http://localhost:5173');
+            // Use config() instead of env() to get cached value, fallback to env() if not cached
+            $frontendUrl = config('cors.allowed_origins.0') ?? env('FRONTEND_URL', 'https://porto-connect-mu.vercel.app');
+            // Remove quotes if present and ensure it's a valid URL
+            $frontendUrl = trim($frontendUrl, '"\'');
+            if (empty($frontendUrl) || $frontendUrl === 'http://localhost:5173') {
+                $frontendUrl = 'https://porto-connect-mu.vercel.app';
+            }
             return redirect($frontendUrl . '/login?error=GoogleLoginFailed');
         }
     }
