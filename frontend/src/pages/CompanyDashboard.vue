@@ -256,15 +256,19 @@
     <!-- FOOTER -->
     <footer class="bg-purple-900 text-white py-16 font-roboto mt-auto">
       <div class="max-w-6xl mx-auto px-6">
-        <div class="mb-12">
-          <h3 class="text-2xl md:text-3xl font-bold font-poppins mb-4">Informasi Kontak</h3>
-          <ul class="space-y-2 text-gray-300">
-            <li>Email : <a href="mailto:unika@unika.ac.id" class="hover:text-purple-300 transition">unika@unika.ac.id</a></li>
-            <li>Hotline : (024) 850 5003</li>
-            <li>WhatsApp Official : <a href="https://wa.me/6281232345479" class="hover:text-purple-300 transition">08123 2345 479</a></li>
-          </ul>
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-8">
+          <!-- Informasi Kontak di kiri -->
+          <div>
+            <h3 class="text-2xl md:text-3xl font-bold font-poppins mb-4">Informasi Kontak</h3>
+            <ul class="space-y-2 text-gray-300">
+              <li>Email : <a href="mailto:unika@unika.ac.id" class="hover:text-purple-300 transition">unika@unika.ac.id</a></li>
+              <li>Hotline : (024) 850 5003</li>
+              <li>WhatsApp Official : <a href="https://wa.me/6281232345479" class="hover:text-purple-300 transition">08123 2345 479</a></li>
+            </ul>
+          </div>
         </div>
 
+        <!-- Logo bar di tengah bawah -->
         <div class="flex items-center justify-center gap-4 mb-8">
           <div class="flex flex-col text-3xl font-poppins text-white">
             <span>Porto</span>
@@ -275,9 +279,12 @@
             <img src="@/assets/logo-soegija-putih.png" alt="Logo SCU" class="h-16" />
           </div>
         </div>
-      </div>
 
-      <div class="border-t border-purple-800 mt-12 pt-8 text-center text-gray-500 text-sm">&copy; 2025 PortoConnect. All rights reserved.</div>
+        <!-- Copyright di bawah -->
+        <div class="border-t border-purple-800 pt-8 text-center text-gray-500 text-sm">
+          © 2025 PortoConnect. All rights reserved.
+        </div>
+      </div>
     </footer>
   </div>
 </template>
@@ -287,6 +294,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import { useSweetAlert } from '@/composables/useSweetAlert'
+import { logger } from '@/utils/logger'
 
 const { showSuccess, showError, showWarning } = useSweetAlert()
 
@@ -340,7 +348,7 @@ onMounted(async () => {
     currentUser.value = user
     await loadPortfoliosPortfolio()
   } catch (error) {
-    console.error('Error validating company access:', error)
+    logger.error('Error validating company access:', error)
     if (error.response?.status === 401 || error.response?.status === 403) {
       localStorage.removeItem('token')
       router.push('/login')
@@ -365,7 +373,7 @@ const loadPortfoliosPortfolio = async (bidang = null) => {
       allPortfoliosPortfolio.value = allResponse.data.portfolios || []
     }
   } catch (error) {
-    console.error('Error loading portfolios:', error)
+    logger.error('Error loading portfolios:', error)
   }
 }
 
@@ -430,30 +438,30 @@ const searchStudents = async () => {
       return
     }
 
-    console.log('Searching with params:', searchForm.value) // Debug log
+    logger.debug('Searching with params:', searchForm.value)
 
     const res = await axios.get('/api/company/search', { params: searchForm.value })
     
-    console.log('Search API response:', res.data) // Debug log
+    logger.debug('Search API response:', res.data)
     
     // Handle pagination response - Laravel pagination returns data in 'data' key
     const students = res.data.data || []
     searchResults.value = students
     
-    console.log('Found students:', students.length) // Debug log
+    logger.debug('Found students:', students.length)
     
     // Get all portfolios from searched students
     if (students.length > 0) {
       const studentIds = students.map(s => s.id)
-      console.log('Student IDs:', studentIds) // Debug log
+      logger.debug('Student IDs:', studentIds)
       
       // Load portfolios for these students with bidang filter
       const params = selectedBidangPortfolio.value ? { bidang: selectedBidangPortfolio.value } : {}
       const allPortfoliosRes = await axios.get('/api/portfolios/public', { params })
       const allPortfoliosList = allPortfoliosRes.data.portfolios || []
       
-      console.log('All portfolios:', allPortfoliosList.length) // Debug log
-      console.log('Portfolio mahasiswa_ids:', allPortfoliosList.map(p => p.mahasiswa_id)) // Debug log
+      logger.debug('All portfolios:', allPortfoliosList.length)
+      logger.debug('Portfolio mahasiswa_ids:', allPortfoliosList.map(p => p.mahasiswa_id))
       
       // Filter portfolios to show only from searched students
       let filteredPortfolios = allPortfoliosList.filter(p => 
@@ -476,7 +484,7 @@ const searchStudents = async () => {
                  mahasiswaName.includes(searchKeyword) ||
                  mahasiswaNim.includes(searchKeyword)
         })
-        console.log('After keyword filter:', filteredPortfolios.length) // Debug log
+        logger.debug('After keyword filter:', filteredPortfolios.length)
       }
       
       // Additional filter: if skill is searched, filter portfolios by skill
@@ -491,7 +499,7 @@ const searchStudents = async () => {
           }
           return false
         })
-        console.log('After skill filter:', filteredPortfolios.length) // Debug log
+        logger.debug('After skill filter:', filteredPortfolios.length)
       }
       
       // Additional filter: if jurusan is searched, filter portfolios by jurusan
@@ -501,7 +509,7 @@ const searchStudents = async () => {
           const portfolioJurusan = (portfolio.mahasiswa?.jurusan || '').toLowerCase()
           return portfolioJurusan.includes(searchJurusan)
         })
-        console.log('After jurusan filter:', filteredPortfolios.length) // Debug log
+        logger.debug('After jurusan filter:', filteredPortfolios.length)
       }
       
       // Additional filter: if fakultas is searched, filter portfolios by fakultas
@@ -511,7 +519,7 @@ const searchStudents = async () => {
           const portfolioFakultas = (portfolio.mahasiswa?.fakultas || '').toLowerCase()
           return portfolioFakultas.includes(searchFakultas)
         })
-        console.log('After fakultas filter:', filteredPortfolios.length) // Debug log
+        logger.debug('After fakultas filter:', filteredPortfolios.length)
       }
       
       // Additional filter: if universitas is searched, filter portfolios by universitas
@@ -521,18 +529,15 @@ const searchStudents = async () => {
           const portfolioUniversitas = (portfolio.mahasiswa?.universitas || '').toLowerCase()
           return portfolioUniversitas.includes(searchUniversitas)
         })
-        console.log('After universitas filter:', filteredPortfolios.length) // Debug log
+        logger.debug('After universitas filter:', filteredPortfolios.length)
       }
       
       portfoliosPortfolio.value = filteredPortfolios
       
-      console.log('Filtered portfolios:', portfoliosPortfolio.value.length) // Debug log
+      logger.debug('Filtered portfolios:', portfoliosPortfolio.value.length)
       
       if (portfoliosPortfolio.value.length === 0) {
         showWarning(`Ditemukan ${students.length} mahasiswa, tapi tidak ada portofolio yang sesuai dengan kriteria pencarian`)
-      } else {
-        // Success - portfolios are already updated
-        console.log('Search successful, showing portfolios')
       }
     } else {
       // If no search results, reload with current bidang filter
@@ -540,8 +545,8 @@ const searchStudents = async () => {
       showWarning('Tidak ada mahasiswa yang ditemukan dengan kriteria pencarian tersebut')
     }
   } catch (error) {
-    console.error('Error searching students:', error)
-    console.error('Error response:', error.response) // Debug log
+    logger.error('Error searching students:', error)
+    logger.debug('Error response:', error.response)
     
     const errorMessage = error.response?.data?.message || 
                         error.response?.data?.errors || 

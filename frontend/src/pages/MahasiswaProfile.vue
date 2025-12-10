@@ -19,25 +19,32 @@
           </router-link>
         </div>
 
-        <div class="flex items-center gap-1 bg-black rounded-full py-1.5 px-2 font-roboto">
-          <div v-if="user">
+        <div class="flex items-center gap-4 font-roboto">
+          <div v-if="user" class="py-1.5 px-4 rounded-full bg-black text-white hover:bg-gray-800 transition flex items-center gap-2">
+            <router-link 
+              v-if="user.role === 'admin'" 
+              to="/dashboard/admin" 
+              class="hover:underline"
+            >
+              Dashboard
+            </router-link>
             <router-link 
               v-if="user.role === 'mahasiswa'" 
               to="/profile/mahasiswa" 
-              class="py-1.5 px-4 rounded-full hover:bg-gray-800 transition text-white"
+              class="hover:underline"
             >
               Dashboard Saya
             </router-link>
             <router-link 
               v-else-if="user.role === 'perusahaan'" 
               to="/dashboard/perusahaan" 
-              class="py-1.5 px-4 rounded-full hover:bg-gray-800 transition text-white"
+              class="hover:underline"
             >
               Dashboard
             </router-link>
             <button 
               @click="handleLogout" 
-              class="py-1.5 px-4 rounded-full bg-black text-white hover:bg-gray-800 transition"
+              class="hover:underline cursor-pointer"
             >
               Logout
             </button>
@@ -116,15 +123,19 @@
     <!-- FOOTER -->
     <footer class="bg-purple-900 text-white py-16 font-roboto mt-auto">
       <div class="max-w-6xl mx-auto px-6">
-        <div class="mb-12">
-          <h3 class="text-2xl md:text-3xl font-bold font-poppins mb-4">Informasi Kontak</h3>
-          <ul class="space-y-2 text-gray-300">
-            <li>Email : <a href="mailto:unika@unika.ac.id" class="hover:text-purple-300 transition">unika@unika.ac.id</a></li>
-            <li>Hotline : (024) 850 5003</li>
-            <li>WhatsApp Official : <a href="https://wa.me/6281232345479" class="hover:text-purple-300 transition">08123 2345 479</a></li>
-          </ul>
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-8">
+          <!-- Informasi Kontak di kiri -->
+          <div>
+            <h3 class="text-2xl md:text-3xl font-bold font-poppins mb-4">Informasi Kontak</h3>
+            <ul class="space-y-2 text-gray-300">
+              <li>Email : <a href="mailto:unika@unika.ac.id" class="hover:text-purple-300 transition">unika@unika.ac.id</a></li>
+              <li>Hotline : (024) 850 5003</li>
+              <li>WhatsApp Official : <a href="https://wa.me/6281232345479" class="hover:text-purple-300 transition">08123 2345 479</a></li>
+            </ul>
+          </div>
         </div>
 
+        <!-- Logo bar di tengah bawah -->
         <div class="flex items-center justify-center gap-4 mb-8">
           <div class="flex flex-col text-3xl font-poppins text-white">
             <span>Porto</span>
@@ -135,9 +146,12 @@
             <img src="@/assets/logo-soegija-putih.png" alt="Logo SCU" class="h-16" />
           </div>
         </div>
-      </div>
 
-      <div class="border-t border-purple-800 mt-12 pt-8 text-center text-gray-500 text-sm">&copy; 2025 PortoConnect. All rights reserved.</div>
+        <!-- Copyright di bawah -->
+        <div class="border-t border-purple-800 pt-8 text-center text-gray-500 text-sm">
+          © 2025 PortoConnect. All rights reserved.
+        </div>
+      </div>
     </footer>
   </div>
 </template>
@@ -146,6 +160,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
+import { logger } from '@/utils/logger'
 
 const router = useRouter()
 const user = ref(null)
@@ -182,7 +197,7 @@ const loadData = async () => {
         return
       }
     } catch (roleError) {
-      console.error('Error validating mahasiswa access:', roleError)
+      logger.error('Error validating mahasiswa access:', roleError)
       if (roleError.response?.status === 401 || roleError.response?.status === 403) {
         localStorage.removeItem('token')
         router.push('/login')
@@ -194,7 +209,7 @@ const loadData = async () => {
     user.value = res.data.mahasiswa.user
     mahasiswa.value = res.data.mahasiswa
   } catch (error) {
-    console.error('Error loading profile:', error)
+    logger.error('Error loading profile:', error)
     if (error.response?.status === 401 || error.response?.status === 403) {
       localStorage.removeItem('token')
       router.push('/login')

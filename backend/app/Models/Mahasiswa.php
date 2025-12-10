@@ -152,7 +152,7 @@ class Mahasiswa extends Model
     }
 
     /**
-     * Query untuk search students dengan berbagai filter
+     * Query untuk search students dengan berbagai filter (optimized)
      */
     public static function searchStudents($filters = [])
     {
@@ -160,7 +160,8 @@ class Mahasiswa extends Model
                 'user:id,name,email',
                 'portofolios' => function($q) {
                     $q->where('is_public', true)
-                      ->select('id', 'mahasiswa_id', 'nama', 'bidang', 'deskripsi', 'public_link', 'is_public');
+                      ->select('id', 'mahasiswa_id', 'nama', 'bidang', 'deskripsi', 'public_link', 'is_public')
+                      ->with(['skills:id,portofolio_id,nama']);
                 }
             ])
             ->select('id', 'user_id', 'nim', 'jurusan', 'fakultas', 'universitas', 'deskripsi_diri')
@@ -191,20 +192,23 @@ class Mahasiswa extends Model
     }
 
     /**
-     * Query untuk mendapatkan mahasiswa dengan portofolio public
+     * Query untuk mendapatkan mahasiswa dengan portofolio public (optimized)
      */
     public static function withPublicPortfolioData($id)
     {
         return static::with([
-                'user',
+                'user:id,name,email',
                 'portofolios' => function($q) {
-                    $q->where('is_public', true);
-                },
-                'projects',
-                'skills',
-                'certificates',
-                'experiences'
+                    $q->where('is_public', true)
+                      ->with([
+                          'skills:id,portofolio_id,nama,level',
+                          'projects:id,portofolio_id,judul,deskripsi,link,gambar,teknologi',
+                          'certificates:id,portofolio_id,nama,penerbit,tanggal_terbit',
+                          'experiences:id,portofolio_id,judul,perusahaan,deskripsi,tanggal_mulai,tanggal_selesai'
+                      ]);
+                }
             ])
+            ->select('id', 'user_id', 'nim', 'jurusan', 'fakultas', 'universitas', 'deskripsi_diri', 'no_telp', 'alamat', 'linkedin', 'github', 'website')
             ->where('id', $id)
             ->withPublicPortfolios()
             ->first();

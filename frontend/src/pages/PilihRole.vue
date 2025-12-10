@@ -34,6 +34,7 @@
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import { useSweetAlert } from '@/composables/useSweetAlert'
+import { logger } from '@/utils/logger'
 
 const { showError } = useSweetAlert()
 
@@ -70,7 +71,7 @@ const selectRole = async (role) => {
     }
 
   } catch (error) {
-    console.error('Gagal memilih role:', error)
+    logger.error('Gagal memilih role:', error)
     if (error.response?.data?.message) {
       showError('Error: ' + error.response.data.message)
     } else {

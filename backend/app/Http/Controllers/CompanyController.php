@@ -5,11 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\Mahasiswa;
 use App\Models\Portofolio;
 use App\Models\SearchHistory;
+use App\Http\Controllers\Traits\ValidatesRole;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class CompanyController extends Controller
 {
+    use ValidatesRole;
+
     public function searchStudents(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -27,11 +30,15 @@ class CompanyController extends Controller
             ], 422);
         }
 
-        $perusahaan = $request->user()->perusahaan;
-        
-        if (!$perusahaan) {
-            return response()->json(['message' => 'Profil perusahaan tidak ditemukan'], 404);
+        if ($error = $this->validatePerusahaan($request)) {
+            return $error;
         }
+
+        $result = $this->getPerusahaanOrFail($request);
+        if ($result['error']) {
+            return $result['error'];
+        }
+        $perusahaan = $result['perusahaan'];
 
         $filters = $request->only(['keyword', 'skill', 'jurusan', 'fakultas', 'universitas']);
         $query = Mahasiswa::searchStudents($filters);
@@ -61,11 +68,15 @@ class CompanyController extends Controller
 
     public function getSearchHistory(Request $request)
     {
-        $perusahaan = $request->user()->perusahaan;
-        
-        if (!$perusahaan) {
-            return response()->json(['message' => 'Profil perusahaan tidak ditemukan'], 404);
+        if ($error = $this->validatePerusahaan($request)) {
+            return $error;
         }
+
+        $result = $this->getPerusahaanOrFail($request);
+        if ($result['error']) {
+            return $result['error'];
+        }
+        $perusahaan = $result['perusahaan'];
 
         $histories = $perusahaan->searchHistories()
             ->orderBy('created_at', 'desc')

@@ -4,25 +4,26 @@ namespace App\Http\Controllers;
 
 use App\Models\Mahasiswa;
 use App\Models\Portofolio;
+use App\Http\Controllers\Traits\ValidatesRole;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\View;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class PDFExportController extends Controller
 {
+    use ValidatesRole;
+
     public function exportPortfolio(Request $request)
     {
-        $user = $request->user();
-        
-        if ($user->role !== 'mahasiswa') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($error = $this->validateMahasiswa($request)) {
+            return $error;
         }
 
-        $mahasiswa = $user->mahasiswa;
-        
-        if (!$mahasiswa) {
-            return response()->json(['message' => 'Profil mahasiswa tidak ditemukan'], 404);
+        $result = $this->getMahasiswaOrFail($request);
+        if ($result['error']) {
+            return $result['error'];
         }
+        $mahasiswa = $result['mahasiswa'];
 
         // Get portfolio ID from request if provided
         $portfolioId = $request->input('portofolio_id');

@@ -21,20 +21,27 @@
 
         <div class="flex items-center gap-4 font-roboto">
           <div v-if="currentUser" class="py-1.5 px-4 rounded-full bg-black text-white hover:bg-gray-800 transition flex items-center gap-2">
-              <router-link 
-                v-if="currentUser.role === 'mahasiswa'"
-                to="/profile/mahasiswa" 
-                class="hover:underline"
-              >
-                Dashboard Saya
-              </router-link>
-              <router-link 
-                v-else-if="currentUser.role === 'perusahaan'"
-                to="/dashboard/perusahaan" 
-                class="hover:underline"
-              >
-                Dashboard
-              </router-link>
+            <router-link 
+              v-if="currentUser.role === 'admin'" 
+              to="/dashboard/admin" 
+              class="hover:underline"
+            >
+              Dashboard
+            </router-link>
+            <router-link 
+              v-if="currentUser.role === 'mahasiswa'"
+              to="/profile/mahasiswa" 
+              class="hover:underline"
+            >
+              Dashboard Saya
+            </router-link>
+            <router-link 
+              v-else-if="currentUser.role === 'perusahaan'"
+              to="/dashboard/perusahaan" 
+              class="hover:underline"
+            >
+              Dashboard
+            </router-link>
             <span>|</span>
             <button 
               @click="handleLogout" 
@@ -172,28 +179,35 @@
     <!-- FOOTER -->
     <footer class="bg-purple-900 text-white py-16 font-roboto">
       <div class="max-w-6xl mx-auto px-6">
-        <div class="mb-12">
-          <h3 class="text-2xl md:text-3xl font-bold font-poppins mb-4">Informasi Kontak</h3>
-          <ul class="space-y-2 text-gray-300">
-            <li>Email : <a href="mailto:unika@unika.ac.id" class="hover:text-purple-300 transition">unika@unika.ac.id</a></li>
-            <li>Hotline : (024) 850 5003</li>
-            <li>WhatsApp Official : <a href="https://wa.me/6281232345479" class="hover:text-purple-300 transition">08123 2345 479</a></li>
-          </ul>
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-8">
+          <!-- Informasi Kontak di kiri -->
+          <div>
+            <h3 class="text-2xl md:text-3xl font-bold font-poppins mb-4">Informasi Kontak</h3>
+            <ul class="space-y-2 text-gray-300">
+              <li>Email : <a href="mailto:unika@unika.ac.id" class="hover:text-purple-300 transition">unika@unika.ac.id</a></li>
+              <li>Hotline : (024) 850 5003</li>
+              <li>WhatsApp Official : <a href="https://wa.me/6281232345479" class="hover:text-purple-300 transition">08123 2345 479</a></li>
+            </ul>
+          </div>
         </div>
 
+        <!-- Logo bar di tengah bawah -->
         <div class="flex items-center justify-center gap-4 mb-8">
           <div class="flex flex-col text-3xl font-poppins text-white">
             <span>Porto</span>
             <span>Connect</span>
           </div>
           <span class="text-3xl text-white">×</span>
-            <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2">
             <img src="@/assets/logo-soegija-putih.png" alt="Logo SCU" class="h-16" />
           </div>
         </div>
-      </div>
 
-      <div class="border-t border-purple-800 mt-12 pt-8 text-center text-gray-500 text-sm">&copy; 2025 PortoConnect. All rights reserved.</div>
+        <!-- Copyright di bawah -->
+        <div class="border-t border-purple-800 pt-8 text-center text-gray-500 text-sm">
+          © 2025 PortoConnect. All rights reserved.
+        </div>
+      </div>
     </footer>
   </div>
 </template>
@@ -204,6 +218,7 @@ import { useRouter } from 'vue-router'
 import axios from 'axios'
 import PortfolioCard from '@/components/PortfolioCard.vue'
 import { useSweetAlert } from '@/composables/useSweetAlert'
+import { logger } from '@/utils/logger'
 
 const { showError } = useSweetAlert()
 
@@ -258,8 +273,8 @@ const loadPortfolios = async (bidang = null) => {
       }
     }
   } catch (error) {
-    console.error('Error loading portfolios:', error)
-    console.error('Error response:', error.response?.data)
+    logger.error('Error loading portfolios:', error)
+    logger.debug('Error response:', error.response?.data)
     portfolios.value = []
     allPortfolios.value = []
     
@@ -313,9 +328,9 @@ const handleLogout = async () => {
   try {
     await axios.post('/api/logout')
   } catch (err) {
-    console.warn('Logout error:', err)
+    logger.warn('Logout error:', err)
   } finally {
-    try { localStorage.removeItem('token') } catch (e) { console.warn('localStorage remove error', e) }
+    try { localStorage.removeItem('token') } catch (e) { logger.warn('localStorage remove error', e) }
     delete axios.defaults.headers.common['Authorization']
     currentUser.value = null
     router.push('/')

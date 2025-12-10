@@ -3,28 +3,29 @@
 namespace App\Http\Controllers;
 
 use App\Models\Mahasiswa;
+use App\Http\Controllers\Traits\ValidatesRole;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class MahasiswaController extends Controller
 {
+    use ValidatesRole;
+
     /**
      * Update profil mahasiswa (global)
      * Hanya bisa edit: nama, email, no_telp, alamat, deskripsi_diri (bio)
      */
     public function update(Request $request)
     {
-        $user = $request->user();
-        
-        if ($user->role !== 'mahasiswa') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($error = $this->validateMahasiswa($request)) {
+            return $error;
         }
 
-        $mahasiswa = $user->mahasiswa;
-        
-        if (!$mahasiswa) {
-            return response()->json(['message' => 'Profil mahasiswa tidak ditemukan'], 404);
+        $result = $this->getMahasiswaOrFail($request);
+        if ($result['error']) {
+            return $result['error'];
         }
+        $mahasiswa = $result['mahasiswa'];
 
         $validator = Validator::make($request->all(), [
             'name' => 'nullable|string|max:255',
@@ -84,14 +85,15 @@ class MahasiswaController extends Controller
      */
     public function show(Request $request)
     {
-        $user = $request->user();
-        
-        if ($user->role !== 'mahasiswa') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($error = $this->validateMahasiswa($request)) {
+            return $error;
         }
 
+        $user = $request->user();
+        
         // Optimasi: Load mahasiswa dengan user relationship sekaligus untuk menghindari N+1 query
         $mahasiswa = Mahasiswa::with('user:id,name,email')
+            ->select('id', 'user_id', 'nim', 'jurusan', 'fakultas', 'universitas', 'deskripsi_diri', 'no_telp', 'alamat', 'linkedin', 'github', 'website', 'foto_profil')
             ->where('user_id', $user->id)
             ->first();
         

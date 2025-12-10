@@ -278,6 +278,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
 import { useSweetAlert } from '@/composables/useSweetAlert'
+import { logger } from '@/utils/logger'
 
 const { showSuccess, showError, showWarning, showInfo, showConfirm } = useSweetAlert()
 
@@ -374,7 +375,7 @@ const loadData = async () => {
     // Load portfolios
     await loadPortfolios()
   } catch (error) {
-    console.error('Error loading data:', error)
+    logger.error('Error loading data:', error)
     if (error.response?.status === 401 || error.response?.status === 403) {
       localStorage.removeItem('token')
       router.push('/login')
@@ -387,12 +388,12 @@ const loadData = async () => {
 const loadPortfolios = async () => {
   try {
     const res = await axios.get('/api/mahasiswa/portfolios')
-    console.log('Portfolio response:', res.data) // Debug log
+    logger.debug('Portfolio response:', res.data)
     portfolios.value = res.data.portofolios || res.data.portfolios || []
     // Reset to first page when loading new data
     currentPage.value = 1
   } catch (error) {
-    console.error('Error loading portfolios:', error)
+    logger.error('Error loading portfolios:', error)
     if (error.response?.status === 401) {
       router.push('/login')
     } else {

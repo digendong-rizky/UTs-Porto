@@ -367,6 +367,7 @@ import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
 import { useSweetAlert } from '@/composables/useSweetAlert'
+import { logger } from '@/utils/logger'
 
 const { showSuccess, showError, showWarning, showInfo, showConfirm } = useSweetAlert()
 
@@ -461,7 +462,7 @@ const createNewPortfolio = async () => {
       router.push('/portfolio/list')
     }
   } catch (error) {
-    console.error('Error creating portfolio:', error)
+    logger.error('Error creating portfolio:', error)
     showError('Gagal membuat portofolio baru: ' + (error.response?.data?.message || 'Unknown error'))
     router.push('/portfolio/list')
   }
@@ -498,7 +499,7 @@ const loadPortfolioById = async (portfolioId, preserveFormData = false) => {
       }
     }
   } catch (error) {
-    console.error('Error loading portfolio:', error)
+    logger.error('Error loading portfolio:', error)
     if (error.response?.status === 401) {
       router.push('/login')
     }
@@ -528,7 +529,7 @@ const autoSavePortfolio = async () => {
     autoSaveTimer.value = setTimeout(async () => {
       try {
         await axios.put(`/api/mahasiswa/portfolios/${route.params.id}`, portfolioForm.value)
-        console.log('Auto-saved portfolio changes')
+        logger.debug('Auto-saved portfolio changes')
         // Update portfolio object to reflect changes
         if (portfolio.value) {
           portfolio.value.nama = portfolioForm.value.nama
@@ -538,11 +539,11 @@ const autoSavePortfolio = async () => {
           portfolio.value.deskripsi = portfolioForm.value.deskripsi
         }
       } catch (error) {
-        console.error('Error auto-saving portfolio:', error)
+        logger.error('Error auto-saving portfolio:', error)
       }
     }, 1000) // Wait 1 second after last change
   } catch (error) {
-    console.error('Error in auto-save:', error)
+    logger.error('Error in auto-save:', error)
   }
 }
 
@@ -698,7 +699,7 @@ const saveProject = async () => {
     } else {
       showError(errorMessage)
     }
-    console.error('Error saving project:', error)
+    logger.error('Error saving project:', error)
   }
 }
 
@@ -875,7 +876,7 @@ const saveExperience = async () => {
     } else {
       showError(errorMessage)
     }
-    console.error('Error saving experience:', error)
+    logger.error('Error saving experience:', error)
   }
 }
 

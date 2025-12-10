@@ -3,24 +3,25 @@
 namespace App\Http\Controllers;
 
 use App\Models\Perusahaan;
+use App\Http\Controllers\Traits\ValidatesRole;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class PerusahaanController extends Controller
 {
+    use ValidatesRole;
+
     public function update(Request $request)
     {
-        $user = $request->user();
-        
-        if ($user->role !== 'perusahaan') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($error = $this->validatePerusahaan($request)) {
+            return $error;
         }
 
-        $perusahaan = $user->perusahaan;
-        
-        if (!$perusahaan) {
-            return response()->json(['message' => 'Profil perusahaan tidak ditemukan'], 404);
+        $result = $this->getPerusahaanOrFail($request);
+        if ($result['error']) {
+            return $result['error'];
         }
+        $perusahaan = $result['perusahaan'];
 
         $validator = Validator::make($request->all(), [
             'nama_perusahaan' => 'sometimes|required|string|max:255',
@@ -54,17 +55,15 @@ class PerusahaanController extends Controller
 
     public function show(Request $request)
     {
-        $user = $request->user();
-        
-        if ($user->role !== 'perusahaan') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($error = $this->validatePerusahaan($request)) {
+            return $error;
         }
 
-        $perusahaan = $user->perusahaan;
-        
-        if (!$perusahaan) {
-            return response()->json(['message' => 'Profil perusahaan tidak ditemukan'], 404);
+        $result = $this->getPerusahaanOrFail($request);
+        if ($result['error']) {
+            return $result['error'];
         }
+        $perusahaan = $result['perusahaan'];
 
         return response()->json([
             'perusahaan' => $perusahaan->load('user')

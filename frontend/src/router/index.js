@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { logger } from '@/utils/logger'
 import axios from 'axios'
 import Home from '@/pages/Home.vue'
 import Login from '@/pages/login.vue'
@@ -133,7 +134,7 @@ router.beforeEach(async (to, from, next) => {
         return
       }
     } catch (error) {
-      console.error('Error checking user role:', error)
+      logger.error('Error checking user role:', error)
       localStorage.removeItem('token')
       next('/login')
       return
@@ -163,7 +164,7 @@ router.beforeEach(async (to, from, next) => {
         return
       }
     } catch (error) {
-      console.error('Error checking user role:', error)
+      logger.error('Error checking user role:', error)
       localStorage.removeItem('token')
       next('/login')
       return
@@ -193,7 +194,7 @@ router.beforeEach(async (to, from, next) => {
         return
       }
     } catch (error) {
-      console.error('Error checking user role:', error)
+      logger.error('Error checking user role:', error)
       localStorage.removeItem('token')
       next('/login')
       return

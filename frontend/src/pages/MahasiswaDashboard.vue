@@ -228,6 +228,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import { useSweetAlert } from '@/composables/useSweetAlert'
+import { logger } from '@/utils/logger'
 
 const { showSuccess, showError, showConfirm } = useSweetAlert()
 
@@ -322,7 +323,7 @@ const loadData = async () => {
       }
     }
   } catch (error) {
-    console.error('Error loading data:', error)
+    logger.error('Error loading data:', error)
     if (error.response?.status === 401) {
       router.push('/login')
     }
@@ -335,7 +336,7 @@ const updatePortfolioVisibility = async () => {
   try {
     await axios.put('/api/mahasiswa/portfolio', portfolioForm.value)
   } catch (error) {
-    console.error('Error updating portfolio visibility:', error)
+    logger.error('Error updating portfolio visibility:', error)
   }
 }
 

@@ -12,6 +12,7 @@
 import { onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
+import { logger } from '@/utils/logger'
 
 const route = useRoute()
 const router = useRouter()
@@ -53,7 +54,7 @@ onMounted(async () => {
       router.push('/pilih-role')
     }
   } catch (error) {
-    console.error('Login error:', error)
+    logger.error('Login error:', error)
     localStorage.removeItem('token')
     router.push('/login?error=login_failed')
   }

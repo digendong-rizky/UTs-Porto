@@ -1,5 +1,5 @@
-# CDRR's
-project web porto
+# PortoConnect
+portofolio management for students and company
 
 link design figma:
 

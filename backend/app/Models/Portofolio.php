@@ -62,23 +62,25 @@ class Portofolio extends Model
     }
 
     /**
-     * Get all public portfolios with relationships
+     * Get all public portfolios with relationships (optimized)
      * @param string|null $bidang Filter by bidang (backend, frontend, fullstack, QATester)
      * @return \Illuminate\Database\Eloquent\Collection
      */
     public static function getPublicPortfolios($bidang = null)
     {
         $query = static::with([
-            'mahasiswa.user:id,name,email',
-            'skills:id,portofolio_id,nama'
-        ])
-        ->where('is_public', true);
+                'mahasiswa:id,user_id,nim,jurusan,fakultas,universitas',
+                'mahasiswa.user:id,name,email',
+                'skills:id,portofolio_id,nama,level'
+            ])
+            ->select('id', 'mahasiswa_id', 'nama', 'bidang', 'deskripsi', 'public_link', 'is_public', 'created_at', 'updated_at')
+            ->where('is_public', true);
 
         if ($bidang) {
             $query->where('bidang', $bidang);
         }
 
-        return $query->get();
+        return $query->orderBy('created_at', 'desc')->get();
     }
 
     /**
@@ -101,22 +103,24 @@ class Portofolio extends Model
     }
 
     /**
-     * Find portfolio by public link
+     * Find portfolio by public link (optimized)
      * @param string $publicLink
      * @return Portofolio|null
      */
     public static function findByPublicLink($publicLink)
     {
         return static::with([
-            'mahasiswa.user',
-            'skills',
-            'projects',
-            'certificates',
-            'experiences'
-        ])
-        ->where('public_link', $publicLink)
-        ->where('is_public', true)
-        ->first();
+                'mahasiswa:id,user_id,nim,jurusan,fakultas,universitas,deskripsi_diri',
+                'mahasiswa.user:id,name,email',
+                'skills:id,portofolio_id,nama,level',
+                'projects:id,portofolio_id,judul,deskripsi,link,gambar,teknologi,tanggal_mulai,tanggal_selesai,urutan',
+                'certificates:id,portofolio_id,nama,penerbit,tanggal_terbit,tanggal_kadaluarsa,urutan',
+                'experiences:id,portofolio_id,judul,perusahaan,deskripsi,tanggal_mulai,tanggal_selesai,urutan'
+            ])
+            ->select('id', 'mahasiswa_id', 'nama', 'bidang', 'education', 'language', 'deskripsi', 'public_link', 'is_public', 'custom_css', 'created_at', 'updated_at')
+            ->where('public_link', $publicLink)
+            ->where('is_public', true)
+            ->first();
     }
 
     /**
@@ -134,32 +138,18 @@ class Portofolio extends Model
     }
 
     /**
-     * Get portfolios by user ID (optimized with join)
+     * Get portfolios by user ID (optimized with eager loading)
      * @param int $userId
      * @return \Illuminate\Database\Eloquent\Collection
      */
     public static function getByUserId($userId)
     {
-        return static::join('mahasiswas', 'portofolios.mahasiswa_id', '=', 'mahasiswas.id')
-            ->where('mahasiswas.user_id', $userId)
-            ->select('portofolios.id', 'portofolios.mahasiswa_id', 'portofolios.nama', 'portofolios.bidang', 
-                     'portofolios.deskripsi', 'portofolios.public_link', 'portofolios.is_public', 
-                     'portofolios.created_at', 'portofolios.updated_at')
-            ->orderBy('portofolios.created_at', 'desc')
-            ->get()
-            ->map(function ($portfolio) {
-                return [
-                    'id' => $portfolio->id,
-                    'mahasiswa_id' => $portfolio->mahasiswa_id,
-                    'nama' => $portfolio->nama,
-                    'bidang' => $portfolio->bidang,
-                    'deskripsi' => $portfolio->deskripsi,
-                    'public_link' => $portfolio->public_link,
-                    'is_public' => $portfolio->is_public,
-                    'created_at' => $portfolio->created_at ? $portfolio->created_at->toISOString() : null,
-                    'updated_at' => $portfolio->updated_at ? $portfolio->updated_at->toISOString() : null,
-                ];
-            });
+        return static::whereHas('mahasiswa', function($q) use ($userId) {
+                $q->where('user_id', $userId);
+            })
+            ->select('id', 'mahasiswa_id', 'nama', 'bidang', 'deskripsi', 'public_link', 'is_public', 'created_at', 'updated_at')
+            ->orderBy('created_at', 'desc')
+            ->get();
     }
 }
 

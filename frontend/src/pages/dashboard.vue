@@ -20,6 +20,7 @@
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
+import { logger } from '@/utils/logger'
 
 const router = useRouter()
 
@@ -37,7 +38,7 @@ onMounted(async () => {
       router.push('/dashboard/perusahaan')
     }
   } catch (error) {
-    console.error('Error loading user:', error)
+    logger.error('Error loading user:', error)
     router.push('/login')
   }
 })
@@ -48,7 +49,7 @@ const handleLogout = async () => {
     localStorage.removeItem('token')
     router.push('/login')
   } catch (error) {
-    console.error('Gagal logout:', error)
+    logger.error('Gagal logout:', error)
     localStorage.removeItem('token')
     router.push('/login')
   }

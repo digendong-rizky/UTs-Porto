@@ -3,24 +3,25 @@
 namespace App\Http\Controllers;
 
 use App\Models\Experience;
+use App\Http\Controllers\Traits\ValidatesRole;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class ExperienceController extends Controller
 {
+    use ValidatesRole;
+
     public function index(Request $request)
     {
-        $user = $request->user();
-        
-        if ($user->role !== 'mahasiswa') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($error = $this->validateMahasiswa($request)) {
+            return $error;
         }
 
-        $mahasiswa = $user->mahasiswa;
-        
-        if (!$mahasiswa) {
-            return response()->json(['message' => 'Profil mahasiswa tidak ditemukan'], 404);
+        $result = $this->getMahasiswaOrFail($request);
+        if ($result['error']) {
+            return $result['error'];
         }
+        $mahasiswa = $result['mahasiswa'];
 
         $experiences = $mahasiswa->experiences()->orderBy('urutan')->get();
 
@@ -29,17 +30,15 @@ class ExperienceController extends Controller
 
     public function store(Request $request)
     {
-        $user = $request->user();
-        
-        if ($user->role !== 'mahasiswa') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($error = $this->validateMahasiswa($request)) {
+            return $error;
         }
 
-        $mahasiswa = $user->mahasiswa;
-        
-        if (!$mahasiswa) {
-            return response()->json(['message' => 'Profil mahasiswa tidak ditemukan'], 404);
+        $result = $this->getMahasiswaOrFail($request);
+        if ($result['error']) {
+            return $result['error'];
         }
+        $mahasiswa = $result['mahasiswa'];
 
         $validator = Validator::make($request->all(), [
             'portofolio_id' => 'nullable|exists:portofolios,id',
@@ -90,13 +89,15 @@ class ExperienceController extends Controller
 
     public function update(Request $request, $id)
     {
-        $user = $request->user();
-        
-        if ($user->role !== 'mahasiswa') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($error = $this->validateMahasiswa($request)) {
+            return $error;
         }
 
-        $mahasiswa = $user->mahasiswa;
+        $result = $this->getMahasiswaOrFail($request);
+        if ($result['error']) {
+            return $result['error'];
+        }
+        $mahasiswa = $result['mahasiswa'];
         $experience = Experience::where('id', $id)
             ->where('mahasiswa_id', $mahasiswa->id)
             ->first();
@@ -154,13 +155,15 @@ class ExperienceController extends Controller
 
     public function destroy($id, Request $request)
     {
-        $user = $request->user();
-        
-        if ($user->role !== 'mahasiswa') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($error = $this->validateMahasiswa($request)) {
+            return $error;
         }
 
-        $mahasiswa = $user->mahasiswa;
+        $result = $this->getMahasiswaOrFail($request);
+        if ($result['error']) {
+            return $result['error'];
+        }
+        $mahasiswa = $result['mahasiswa'];
         $experience = Experience::where('id', $id)
             ->where('mahasiswa_id', $mahasiswa->id)
             ->first();

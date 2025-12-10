@@ -14,16 +14,40 @@
           <router-link v-if="!currentUser || currentUser.role !== 'perusahaan'" to="/explore" class="text-gray-700 hover:text-purple-700 transition">Portofolio</router-link>
         </div>
 
-        <div class="flex items-center gap-1 bg-black rounded-full py-1.5 px-2 font-roboto">
-          <div v-if="currentUser">
-            <router-link v-if="currentUser.role === 'mahasiswa'" to="/profile/mahasiswa" class="py-1.5 px-4 rounded-full hover:bg-gray-800 transition">Dashboard Saya</router-link>
-            <router-link v-else-if="currentUser.role === 'perusahaan'" to="/dashboard/perusahaan" class="py-1.5 px-4 rounded-full hover:bg-gray-800 transition">Dashboard</router-link>
-            <button @click="handleLogout" class="py-1.5 px-4 rounded-full bg-white text-black hover:bg-gray-200 transition">Logout</button>
+        <div class="flex items-center gap-4 font-roboto">
+          <div v-if="currentUser" class="py-1.5 px-4 rounded-full bg-black text-white hover:bg-gray-800 transition flex items-center gap-2">
+            <router-link 
+              v-if="currentUser.role === 'admin'" 
+              to="/dashboard/admin" 
+              class="hover:underline"
+            >
+              Dashboard
+            </router-link>
+            <router-link
+              v-if="currentUser.role === 'mahasiswa'"
+              to="/profile/mahasiswa"
+              class="hover:underline"
+            >
+              Dashboard Saya
+            </router-link>
+            <router-link
+              v-else-if="currentUser.role === 'perusahaan'"
+              to="/dashboard/perusahaan"
+              class="hover:underline"
+            >
+              Dashboard
+            </router-link>
+            <span>|</span>
+            <button
+              @click="handleLogout"
+              class="hover:underline cursor-pointer"
+            >
+              Logout
+            </button>
           </div>
 
           <template v-else>
-            <router-link to="/register" class="py-1.5 px-4 rounded-full hover:bg-gray-800 transition">Sign Up</router-link>
-            <router-link to="/login" class="py-1.5 px-4 rounded-full bg-white text-black hover:bg-gray-200 transition">Login</router-link>
+            <router-link to="/login" class="py-1.5 px-4 rounded-full bg-black text-white hover:bg-gray-800 transition">Sign Up | Login</router-link>
           </template>
         </div>
       </nav>
@@ -86,44 +110,33 @@
 
     <!-- FOOTER -->
     <footer class="bg-purple-900 text-white py-16 font-roboto">
-      <div class="max-w-6xl mx-auto px-6 flex flex-col items-center justify-center gap-12">
-
-        <!-- LOGO BAR SEPERTI GAMBAR -->
-        <div class="flex items-center justify-center gap-10 md:gap-14">
-
-          <!-- Porto Connect -->
-          <div class="text-center">
-            <p class="text-2xl font-poppins font-semibold leading-tight">Porto<br />Connect</p>
-          </div>
-
-          <!-- Icon X (garis silang) -->
+      <div class="max-w-6xl mx-auto px-6">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-8">
+          <!-- Informasi Kontak di kiri -->
           <div>
-            <svg width="55" height="55" viewBox="0 0 100 100" fill="none" aria-hidden="true">
-              <path d="M20 20 L80 80 M80 20 L20 80" stroke="white" stroke-width="8" stroke-linecap="round" />
-            </svg>
-          </div>
-
-          <!-- Logo S + Text Universitas -->
-          <div class="flex items-center gap-4">
-            <img src="@/assets/logo-soegija-putih.png" class="h-14 w-auto" alt="Logo Soegija">
-            <div class="leading-tight">
-              <p class="text-xl font-poppins font-semibold">SOEGIJAPRANATA</p>
-              <p class="text-lg font-poppins tracking-wide">CATHOLIC UNIVERSITY</p>
-            </div>
+            <h3 class="text-2xl md:text-3xl font-bold font-poppins mb-4">Informasi Kontak</h3>
+            <ul class="space-y-2 text-gray-300">
+              <li>Email : <a href="mailto:unika@unika.ac.id" class="hover:text-purple-300 transition">unika@unika.ac.id</a></li>
+              <li>Hotline : (024) 850 5003</li>
+              <li>WhatsApp Official : <a href="https://wa.me/6281232345479" class="hover:text-purple-300 transition">08123 2345 479</a></li>
+            </ul>
           </div>
         </div>
 
-        <!-- Informasi Kontak -->
-        <div class="text-center">
-          <h3 class="text-2xl font-bold font-poppins mb-4">Informasi Kontak</h3>
-          <ul class="space-y-1 text-gray-300">
-            <li>Email : <a href="mailto:unika@unika.ac.id" class="hover:text-purple-300 transition">unika@unika.ac.id</a></li>
-            <li>Hotline : (024) 850 5003</li>
-            <li>WhatsApp Official : <a href="https://wa.me/6281232345479" class="hover:text-purple-300 transition">08123 2345 479</a></li>
-          </ul>
+        <!-- Logo bar di tengah bawah -->
+        <div class="flex items-center justify-center gap-4 mb-8">
+          <div class="flex flex-col text-3xl font-poppins text-white">
+            <span>Porto</span>
+            <span>Connect</span>
+          </div>
+          <span class="text-3xl text-white">×</span>
+          <div class="flex items-center gap-2">
+            <img src="@/assets/logo-soegija-putih.png" alt="Logo SCU" class="h-16" />
+          </div>
         </div>
 
-        <div class="border-t border-purple-800 pt-6 text-center text-gray-400 text-sm w-full">
+        <!-- Copyright di bawah -->
+        <div class="border-t border-purple-800 pt-8 text-center text-gray-500 text-sm">
           © 2025 PortoConnect. All rights reserved.
         </div>
       </div>
@@ -139,6 +152,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import FolderGrip from '@/components/FolderGrip.vue'
+import { logger } from '@/utils/logger'
 
 const router = useRouter()
 const currentUser = ref(null)
@@ -151,7 +165,7 @@ onMounted(async () => {
       const res = await axios.get('/api/me')
       currentUser.value = res.data.user
     } catch (err) {
-      console.warn('Error fetching /api/me:', err)
+      logger.warn('Error fetching /api/me:', err)
     }
   }
 })
@@ -165,9 +179,9 @@ const handleLogout = async () => {
   try {
     await axios.post('/api/logout')
   } catch (err) {
-    console.warn('Logout error:', err)
+    logger.warn('Logout error:', err)
   } finally {
-    try { localStorage.removeItem('token') } catch (e) { console.warn('localStorage remove error', e) }
+    try { localStorage.removeItem('token') } catch (e) { logger.warn('localStorage remove error', e) }
     delete axios.defaults.headers.common['Authorization']
     currentUser.value = null
     router.push('/')
@@ -243,3 +257,4 @@ const handleLogout = async () => {
   .hero-title { font-size: 36px; -webkit-text-stroke: 3px #ffffff; }
 }
 </style>
+

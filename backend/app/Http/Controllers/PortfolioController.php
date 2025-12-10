@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Mahasiswa;
 use App\Models\Portofolio;
+use App\Http\Controllers\Traits\ValidatesRole;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
@@ -12,20 +13,20 @@ use Illuminate\Support\Str;
 
 class PortfolioController extends Controller
 {
+    use ValidatesRole;
+
     /**
      * Get all portfolios for authenticated mahasiswa
      */
     public function index(Request $request)
     {
         try {
-            $user = $request->user();
-            
-            if ($user->role !== 'mahasiswa') {
-                return response()->json(['message' => 'Unauthorized'], 403);
+            if ($error = $this->validateMahasiswa($request)) {
+                return $error;
             }
 
             // Get portfolios using model method
-            $portofolios = Portofolio::getByUserId($user->id);
+            $portofolios = Portofolio::getByUserId($request->user()->id);
 
             return response()->json([
                 'portofolios' => $portofolios,
@@ -45,24 +46,26 @@ class PortfolioController extends Controller
      */
     public function show(Request $request, $id)
     {
-        $user = $request->user();
-        
-        if ($user->role !== 'mahasiswa') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($error = $this->validateMahasiswa($request)) {
+            return $error;
         }
 
+        $user = $request->user();
+        
         // Optimasi: Query langsung dengan eager loading untuk menghindari N+1 query
         $portofolio = Portofolio::where('id', $id)
             ->whereHas('mahasiswa', function($q) use ($user) {
                 $q->where('user_id', $user->id);
             })
             ->with([
+                'mahasiswa:id,user_id,nim,jurusan,fakultas,universitas',
                 'mahasiswa.user:id,name,email',
-                'projects',
-                'skills',
-                'certificates',
-                'experiences'
+                'projects:id,portofolio_id,judul,deskripsi,link,gambar,teknologi,tanggal_mulai,tanggal_selesai,urutan',
+                'skills:id,portofolio_id,nama,level,urutan',
+                'certificates:id,portofolio_id,nama,penerbit,tanggal_terbit,tanggal_kadaluarsa,urutan',
+                'experiences:id,portofolio_id,judul,perusahaan,deskripsi,tanggal_mulai,tanggal_selesai,urutan'
             ])
+            ->select('id', 'mahasiswa_id', 'nama', 'bidang', 'education', 'language', 'deskripsi', 'public_link', 'is_public', 'custom_css', 'created_at', 'updated_at')
             ->first();
         
         if (!$portofolio) {
@@ -80,17 +83,15 @@ class PortfolioController extends Controller
      */
     public function store(Request $request)
     {
-        $user = $request->user();
-        
-        if ($user->role !== 'mahasiswa') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($error = $this->validateMahasiswa($request)) {
+            return $error;
         }
 
-        $mahasiswa = $user->mahasiswa;
-        
-        if (!$mahasiswa) {
-            return response()->json(['message' => 'Profil mahasiswa tidak ditemukan'], 404);
+        $result = $this->getMahasiswaOrFail($request);
+        if ($result['error']) {
+            return $result['error'];
         }
+        $mahasiswa = $result['mahasiswa'];
 
         $validator = Validator::make($request->all(), [
             'nama' => 'nullable|string|max:255',
@@ -106,9 +107,12 @@ class PortfolioController extends Controller
             ], 422);
         }
 
+        // Optimize: Get count without loading all portfolios
+        $portfolioCount = Portofolio::where('mahasiswa_id', $mahasiswa->id)->count();
+        
         $portofolio = Portofolio::create([
             'mahasiswa_id' => $mahasiswa->id,
-            'nama' => $request->nama ?? 'Portofolio ' . ($mahasiswa->portofolios()->count() + 1),
+            'nama' => $request->nama ?? 'Portofolio ' . ($portfolioCount + 1),
             'bidang' => $request->bidang ?? null,
             'education' => $request->education ?? null,
             'language' => $request->language ?? null,
@@ -129,17 +133,15 @@ class PortfolioController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $user = $request->user();
-        
-        if ($user->role !== 'mahasiswa') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($error = $this->validateMahasiswa($request)) {
+            return $error;
         }
 
-        $mahasiswa = $user->mahasiswa;
-        
-        if (!$mahasiswa) {
-            return response()->json(['message' => 'Profil mahasiswa tidak ditemukan'], 404);
+        $result = $this->getMahasiswaOrFail($request);
+        if ($result['error']) {
+            return $result['error'];
         }
+        $mahasiswa = $result['mahasiswa'];
 
         $portofolio = $mahasiswa->portofolios()->find($id);
         
@@ -149,7 +151,11 @@ class PortfolioController extends Controller
 
         $validator = Validator::make($request->all(), [
             'nama' => 'nullable|string|max:255',
-            'bidang' => 'nullable|in:backend,frontend,fullstack,QATester',
+            'bidang' => ['nullable', function ($attribute, $value, $fail) {
+                if ($value && !PortfolioBidang::isValid($value)) {
+                    $fail('Bidang tidak valid');
+                }
+            }],
             'education' => 'nullable|string',
             'language' => 'nullable|string',
             'deskripsi' => 'nullable|string',
@@ -187,17 +193,15 @@ class PortfolioController extends Controller
      */
     public function destroy(Request $request, $id)
     {
-        $user = $request->user();
-        
-        if ($user->role !== 'mahasiswa') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($error = $this->validateMahasiswa($request)) {
+            return $error;
         }
 
-        $mahasiswa = $user->mahasiswa;
-        
-        if (!$mahasiswa) {
-            return response()->json(['message' => 'Profil mahasiswa tidak ditemukan'], 404);
+        $result = $this->getMahasiswaOrFail($request);
+        if ($result['error']) {
+            return $result['error'];
         }
+        $mahasiswa = $result['mahasiswa'];
 
         $portofolio = $mahasiswa->portofolios()->find($id);
         
@@ -258,17 +262,15 @@ class PortfolioController extends Controller
      */
     public function generatePublicLink(Request $request, $id)
     {
-        $user = $request->user();
-        
-        if ($user->role !== 'mahasiswa') {
-            return response()->json(['message' => 'Unauthorized'], 403);
+        if ($error = $this->validateMahasiswa($request)) {
+            return $error;
         }
 
-        $mahasiswa = $user->mahasiswa;
-        
-        if (!$mahasiswa) {
-            return response()->json(['message' => 'Profil mahasiswa tidak ditemukan'], 404);
+        $result = $this->getMahasiswaOrFail($request);
+        if ($result['error']) {
+            return $result['error'];
         }
+        $mahasiswa = $result['mahasiswa'];
 
         $portofolio = $mahasiswa->portofolios()->find($id);
         
@@ -300,24 +302,25 @@ class PortfolioController extends Controller
             $bidang = $request->query('bidang');
             $cacheKey = $bidang ? 'public_portfolios_' . Str::slug($bidang) : 'public_portfolios_all';
             
-            // Try to use cache, but fallback to direct query if cache fails
-            try {
+            // Cache for 5 minutes (300 seconds)
             $portfolios = Cache::remember($cacheKey, 300, function () use ($bidang) {
-                    return Portofolio::getPublicPortfolios($bidang);
-                });
-            } catch (\Exception $cacheException) {
-                // If cache fails (e.g., database connection issue), query directly
-                Log::warning('Cache failed, using direct query: ' . $cacheException->getMessage());
-                $portfolios = Portofolio::getPublicPortfolios($bidang);
-            }
+                return Portofolio::getPublicPortfolios($bidang);
+            });
 
             return response()->json(['portfolios' => $portfolios]);
         } catch (\Exception $e) {
             Log::error('Error in getPublicPortfolios: ' . $e->getMessage());
-            return response()->json([
-                'message' => 'Gagal memuat portofolio',
-                'error' => config('app.debug') ? $e->getMessage() : null
-            ], 500);
+            
+            // Fallback to direct query if cache fails
+            try {
+                $portfolios = Portofolio::getPublicPortfolios($request->query('bidang'));
+                return response()->json(['portfolios' => $portfolios]);
+            } catch (\Exception $fallbackException) {
+                return response()->json([
+                    'message' => 'Gagal memuat portofolio',
+                    'error' => config('app.debug') ? $fallbackException->getMessage() : null
+                ], 500);
+            }
         }
     }
 

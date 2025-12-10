@@ -246,17 +246,18 @@ class AdminController extends Controller
     }
 
     /**
-     * Get all portfolios for admin
+     * Get all portfolios for admin (optimized)
      */
     public function getPortfolios(Request $request)
     {
         $bidang = $request->has('bidang') && $request->bidang ? $request->bidang : null;
+        
         $portfolios = Portofolio::with([
-            'mahasiswa:id,user_id,universitas,jurusan',
-            'mahasiswa.user:id,name',
-            'skills:id,portofolio_id,nama,level'
-        ])
-            ->select('id', 'mahasiswa_id', 'nama', 'bidang', 'deskripsi', 'public_link', 'is_public', 'created_at')
+                'mahasiswa:id,user_id,universitas,jurusan,fakultas',
+                'mahasiswa.user:id,name,email',
+                'skills:id,portofolio_id,nama,level'
+            ])
+            ->select('id', 'mahasiswa_id', 'nama', 'bidang', 'deskripsi', 'public_link', 'is_public', 'created_at', 'updated_at')
             ->byBidang($bidang)
             ->orderBy('created_at', 'desc')
             ->get();
