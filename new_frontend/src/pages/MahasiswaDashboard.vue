@@ -227,6 +227,9 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
+import { useSweetAlert } from '@/composables/useSweetAlert'
+
+const { showSuccess, showError, showConfirm } = useSweetAlert()
 
 const router = useRouter()
 const user = ref(null)
@@ -340,16 +343,16 @@ const generatePublicLink = async () => {
   try {
     const res = await axios.post('/api/mahasiswa/portfolio/generate-link')
     portfolio.value = { ...portfolio.value, public_link: res.data.public_link }
-    alert('Link publik berhasil dibuat')
+    showSuccess('Link publik berhasil dibuat')
   } catch (error) {
-    alert('Gagal membuat link publik')
+    showError('Gagal membuat link publik')
   }
 }
 
 const copyPublicLink = () => {
   const link = `${baseUrl}/portfolio/${portfolio.value.public_link}`
   navigator.clipboard.writeText(link)
-  alert('Link berhasil disalin')
+  showSuccess('Link berhasil disalin')
 }
 
 const exportPDF = async () => {
@@ -369,9 +372,9 @@ const exportPDF = async () => {
     document.body.removeChild(link)
     window.URL.revokeObjectURL(url)
     
-    alert('PDF berhasil diunduh')
+    showSuccess('PDF berhasil diunduh')
   } catch (error) {
-    alert('Gagal membuat PDF: ' + (error.response?.data?.message || 'Unknown error'))
+    showError('Gagal membuat PDF: ' + (error.response?.data?.message || 'Unknown error'))
   }
 }
 
@@ -410,25 +413,26 @@ const saveProject = async () => {
   try {
     if (editingProject.value) {
       await axios.put(`/api/mahasiswa/projects/${editingProject.value.id}`, projectForm.value)
-      alert('Proyek berhasil diperbarui')
+      showSuccess('Proyek berhasil diperbarui')
     } else {
       await axios.post('/api/mahasiswa/projects', projectForm.value)
-      alert('Proyek berhasil ditambahkan')
+      showSuccess('Proyek berhasil ditambahkan')
     }
     closeProjectModal()
     await loadData()
   } catch (error) {
-    alert('Gagal menyimpan proyek: ' + (error.response?.data?.message || 'Unknown error'))
+    showError('Gagal menyimpan proyek: ' + (error.response?.data?.message || 'Unknown error'))
   }
 }
 
 const deleteProject = async (id) => {
-  if (!confirm('Yakin ingin menghapus proyek ini?')) return
+  const result = await showConfirm('Yakin ingin menghapus proyek ini?', 'Ya, Hapus', 'Batal')
+  if (!result.isConfirmed) return
   try {
     await axios.delete(`/api/mahasiswa/projects/${id}`)
     await loadData()
   } catch (error) {
-    alert('Gagal menghapus proyek')
+    showError('Gagal menghapus proyek')
   }
 }
 
@@ -461,25 +465,26 @@ const saveSkill = async () => {
   try {
     if (editingSkill.value) {
       await axios.put(`/api/mahasiswa/skills/${editingSkill.value.id}`, skillForm.value)
-      alert('Skill berhasil diperbarui')
+      showSuccess('Skill berhasil diperbarui')
     } else {
       await axios.post('/api/mahasiswa/skills', skillForm.value)
-      alert('Skill berhasil ditambahkan')
+      showSuccess('Skill berhasil ditambahkan')
     }
     closeSkillModal()
     await loadData()
   } catch (error) {
-    alert('Gagal menyimpan skill: ' + (error.response?.data?.message || 'Unknown error'))
+    showError('Gagal menyimpan skill: ' + (error.response?.data?.message || 'Unknown error'))
   }
 }
 
 const deleteSkill = async (id) => {
-  if (!confirm('Yakin ingin menghapus skill ini?')) return
+  const result = await showConfirm('Yakin ingin menghapus skill ini?', 'Ya, Hapus', 'Batal')
+  if (!result.isConfirmed) return
   try {
     await axios.delete(`/api/mahasiswa/skills/${id}`)
     await loadData()
   } catch (error) {
-    alert('Gagal menghapus skill')
+    showError('Gagal menghapus skill')
   }
 }
 
@@ -497,18 +502,11 @@ const handleLogout = async () => {
 
 <style scoped>
 .dashboard-gradient {
-  background: 
-    radial-gradient(ellipse 150% 80% at 50% 0%, 
-      #4c1d95 0%, 
-      #5b21b6 10%, 
-      #6b21a8 20%, 
-      #7c3aed 35%, 
-      #9333ea 50%, 
-      #a855f7 65%, 
-      #c084fc 80%, 
-      #ddd6fe 92%, 
-      #f3e8ff 98%, 
-      #ffffff 100%
-    );
+  background: radial-gradient(
+    ellipse 160% 120% at 50% -55%,
+    #000000 48%,
+    #50145C 60%,
+    #ffffff 80%
+  );
 }
 </style>

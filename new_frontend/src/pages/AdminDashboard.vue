@@ -1,15 +1,49 @@
 <template>
   <div class="min-h-screen dashboard-gradient">
-    <header class="bg-white shadow-sm">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-        <h1 class="text-2xl font-bold text-purple-700">Dashboard Admin</h1>
-        <button @click="handleLogout" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
-          Logout
-        </button>
-      </div>
+    <!-- NAVBAR -->
+    <header class="fixed top-6 left-0 right-0 z-50">
+      <nav class="max-w-6xl mx-auto py-3 px-6 bg-white rounded-full flex justify-between items-center shadow-lg">
+        <div class="flex items-center gap-3">
+          <span class="text-xl font-bold font-poppins text-purple-700">Porto Connect</span>
+          <img src="@/assets/logo-soegija.png" alt="Soegijapranata Logo" class="h-8" />
+        </div>
+
+        <div class="hidden md:flex items-center gap-8 font-roboto">
+          <router-link to="/" class="text-gray-700 hover:text-purple-700 transition">Home</router-link>
+          <router-link 
+            v-if="!currentUser || currentUser.role !== 'admin'"
+            to="/explore" 
+            class="text-gray-700 hover:text-purple-700 transition"
+          >
+            Portofolio
+          </router-link>
+        </div>
+
+        <div class="flex items-center gap-4 font-roboto">
+          <div v-if="currentUser" class="py-1.5 px-4 rounded-full bg-black text-white hover:bg-gray-800 transition flex items-center gap-2">
+            <router-link 
+              to="/dashboard/admin" 
+              class="hover:underline"
+            >
+              Dashboard
+            </router-link>
+            <span>|</span>
+            <button 
+              @click="handleLogout" 
+              class="hover:underline cursor-pointer"
+            >
+              Logout
+            </button>
+          </div>
+
+          <template v-else>
+            <router-link to="/login" class="py-1.5 px-4 rounded-full hover:bg-gray-800 transition text-white bg-black rounded-full">Sign Up | Login</router-link>
+          </template>
+        </div>
+      </nav>
     </header>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-32">
       <!-- Tabs -->
       <div class="bg-white rounded-lg shadow mb-6">
         <div class="border-b border-gray-200">
@@ -90,7 +124,7 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-200">
-              <tr v-for="user in users" :key="user.id">
+              <tr v-for="user in paginatedUsers" :key="user.id">
                 <td class="px-4 py-3">{{ user.name }}</td>
                 <td class="px-4 py-3">{{ user.email }}</td>
                 <td class="px-4 py-3">{{ user.role }}</td>
@@ -101,7 +135,11 @@
                 </td>
                 <td class="px-4 py-3">
                   <div class="flex gap-2">
-                    <button @click="verifyUser(user.id)" class="text-blue-600 text-sm hover:underline">
+                    <button 
+                      v-if="!user.email_verified_at"
+                      @click="verifyUser(user.id)" 
+                      class="text-blue-600 text-sm hover:underline"
+                    >
                       Verify
                     </button>
                     <button @click="deleteUser(user.id)" class="text-red-600 text-sm hover:underline">
@@ -113,6 +151,33 @@
             </tbody>
           </table>
         </div>
+        <!-- Pagination -->
+        <div v-if="users.length > 10" class="p-4 border-t flex justify-between items-center">
+          <div class="text-sm text-gray-600">
+            Menampilkan {{ (currentPage - 1) * itemsPerPage + 1 }} - {{ Math.min(currentPage * itemsPerPage, users.length) }} dari {{ users.length }} users
+          </div>
+          <div class="flex gap-2">
+            <button 
+              @click="currentPage = Math.max(1, currentPage - 1)"
+              :disabled="currentPage === 1"
+              :class="currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'"
+              class="px-4 py-2 border rounded-lg"
+            >
+              Sebelumnya
+            </button>
+            <span class="px-4 py-2 text-gray-700">
+              Halaman {{ currentPage }} dari {{ totalPages }}
+            </span>
+            <button 
+              @click="currentPage = Math.min(totalPages, currentPage + 1)"
+              :disabled="currentPage === totalPages"
+              :class="currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'"
+              class="px-4 py-2 border rounded-lg"
+            >
+              Selanjutnya
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -120,7 +185,7 @@
       <div v-if="activeTab === 'portfolios'">
         <div class="flex gap-6">
           <!-- Sidebar Kategori -->
-          <aside class="w-64 bg-white rounded-lg shadow-sm p-4 h-fit sticky top-4">
+          <aside class="w-64 bg-white rounded-lg shadow-sm p-4 h-fit mt-8">
             <h3 class="font-bold text-gray-800 mb-4">Kategori Bidang</h3>
             <ul class="space-y-2">
               <li>
@@ -198,7 +263,7 @@
             <!-- Portfolio Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div
-                v-for="portfolio in filteredPortfolios"
+                v-for="portfolio in paginatedPortfolios"
                 :key="portfolio.id"
                 class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow transform hover:scale-105 relative"
               >
@@ -277,6 +342,29 @@
 
             <div v-if="filteredPortfolios.length === 0" class="text-center text-gray-500 py-12">
               <p>Tidak ada portofolio yang ditemukan</p>
+            </div>
+
+            <!-- Pagination -->
+            <div v-if="filteredPortfolios.length > 6" class="mt-6 flex justify-center items-center gap-2">
+              <button 
+                @click="currentPagePortfolio = Math.max(1, currentPagePortfolio - 1)"
+                :disabled="currentPagePortfolio === 1"
+                :class="currentPagePortfolio === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'"
+                class="px-4 py-2 border rounded-lg bg-white text-gray-700"
+              >
+                ←
+              </button>
+              <span class="px-4 py-2 text-gray-700 bg-white border rounded-lg text-sm">
+                {{ currentPagePortfolio }} / {{ totalPagesPortfolio }}
+              </span>
+              <button 
+                @click="currentPagePortfolio = Math.min(totalPagesPortfolio, currentPagePortfolio + 1)"
+                :disabled="currentPagePortfolio === totalPagesPortfolio"
+                :class="currentPagePortfolio === totalPagesPortfolio ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'"
+                class="px-4 py-2 border rounded-lg bg-white text-gray-700"
+              >
+                →
+              </button>
             </div>
           </main>
         </div>
@@ -473,6 +561,33 @@
         </div>
       </div>
     </div>
+
+    <!-- FOOTER -->
+    <footer class="bg-purple-900 text-white py-16 font-roboto">
+      <div class="max-w-6xl mx-auto px-6">
+        <div class="mb-12">
+          <h3 class="text-2xl md:text-3xl font-bold font-poppins mb-4">Informasi Kontak</h3>
+          <ul class="space-y-2 text-gray-300">
+            <li>Email : <a href="mailto:unika@unika.ac.id" class="hover:text-purple-300 transition">unika@unika.ac.id</a></li>
+            <li>Hotline : (024) 850 5003</li>
+            <li>WhatsApp Official : <a href="https://wa.me/6281232345479" class="hover:text-purple-300 transition">08123 2345 479</a></li>
+          </ul>
+        </div>
+
+        <div class="flex items-center justify-center gap-4 mb-8">
+          <div class="flex flex-col text-3xl font-poppins text-white">
+            <span>Porto</span>
+            <span>Connect</span>
+          </div>
+          <span class="text-3xl text-white">×</span>
+          <div class="flex items-center gap-2">
+            <img src="@/assets/logo-soegija-putih.png" alt="Logo SCU" class="h-16" />
+          </div>
+        </div>
+      </div>
+
+      <div class="border-t border-purple-800 mt-12 pt-8 text-center text-gray-500 text-sm">&copy; 2025 PortoConnect. All rights reserved.</div>
+    </footer>
   </div>
 </template>
 
@@ -480,8 +595,12 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
+import { useSweetAlert } from '@/composables/useSweetAlert'
+
+const { showSuccess, showError, showWarning, showConfirm } = useSweetAlert()
 
 const router = useRouter()
+const currentUser = ref(null)
 const users = ref([])
 const stats = ref({})
 const searchQuery = ref('')
@@ -492,11 +611,15 @@ const activeTab = ref('home')
 const portfolios = ref([])
 const allPortfolios = ref([])
 const selectedBidang = ref(null)
+const currentPagePortfolio = ref(1)
+const itemsPerPagePortfolio = 6
 const showDeleteModal = ref(false)
 const portfolioToDelete = ref(null)
 const deleting = ref(false)
 const showPortfolioModal = ref(false)
 const selectedPortfolio = ref(null)
+const currentPage = ref(1)
+const itemsPerPage = 10
 
 const userForm = ref({
   id: null,
@@ -511,6 +634,20 @@ const tabs = [
   { id: 'portfolios', label: 'Portofolios' }
 ]
 
+// Pagination computed
+const totalPages = computed(() => {
+  return Math.ceil(users.value.length / itemsPerPage)
+})
+
+const paginatedUsers = computed(() => {
+  if (users.value.length <= itemsPerPage) {
+    return users.value
+  }
+  const start = (currentPage.value - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return users.value.slice(start, end)
+})
+
 onMounted(async () => {
   const token = localStorage.getItem('token')
   if (!token) {
@@ -524,6 +661,7 @@ onMounted(async () => {
   try {
     const response = await axios.get('/api/me')
     const user = response.data?.user
+    currentUser.value = user
     
     if (!user || user.role !== 'admin') {
       // Redirect berdasarkan role
@@ -547,7 +685,7 @@ onMounted(async () => {
       localStorage.removeItem('token')
       router.push('/login')
     } else {
-      alert('Gagal memuat data. Silakan refresh halaman.')
+      showError('Gagal memuat data. Silakan refresh halaman.')
     }
   }
 })
@@ -569,6 +707,8 @@ const loadUsers = async () => {
     
     const res = await axios.get('/api/admin/users', { params })
     users.value = res.data.data || res.data
+    // Reset to first page when loading new data
+    currentPage.value = 1
   } catch (error) {
     console.error('Error loading users:', error)
   }
@@ -579,6 +719,9 @@ const loadPortfolios = async (bidang = null) => {
     const params = bidang ? { bidang } : {}
     const response = await axios.get('/api/admin/portfolios', { params })
     portfolios.value = response.data.portfolios || []
+    
+    // Reset to first page when loading new data
+    currentPagePortfolio.value = 1
     
     // Load all portfolios for counting if not already loaded
     if (allPortfolios.value.length === 0) {
@@ -592,6 +735,7 @@ const loadPortfolios = async (bidang = null) => {
 
 const filterByBidang = (bidang) => {
   selectedBidang.value = bidang
+  currentPagePortfolio.value = 1 // Reset to first page when filtering
   loadPortfolios(bidang)
 }
 
@@ -603,13 +747,27 @@ const totalPortfolios = computed(() => {
   return allPortfolios.value.length
 })
 
+const totalPagesPortfolio = computed(() => {
+  return Math.ceil(filteredPortfolios.value.length / itemsPerPagePortfolio)
+})
+
+const paginatedPortfolios = computed(() => {
+  if (filteredPortfolios.value.length <= itemsPerPagePortfolio) {
+    return filteredPortfolios.value
+  }
+  const start = (currentPagePortfolio.value - 1) * itemsPerPagePortfolio
+  const end = start + itemsPerPagePortfolio
+  return filteredPortfolios.value.slice(start, end)
+})
+
 const getCountByBidang = (bidang) => {
   return allPortfolios.value.filter(p => p.bidang === bidang).length
 }
 
 const viewPortfolio = (portfolio) => {
-  selectedPortfolio.value = portfolio
-  showPortfolioModal.value = true
+  if (portfolio.public_link) {
+    router.push(`/portfolio/${portfolio.public_link}`)
+  }
 }
 
 const confirmDelete = (portfolio) => {
@@ -623,7 +781,7 @@ const deletePortfolio = async () => {
   deleting.value = true
   try {
     await axios.delete(`/api/admin/portfolios/${portfolioToDelete.value.id}`)
-    alert('Portofolio berhasil dihapus')
+    showSuccess('Portofolio berhasil dihapus')
     showDeleteModal.value = false
     portfolioToDelete.value = null
     await loadPortfolios(selectedBidang.value)
@@ -631,7 +789,7 @@ const deletePortfolio = async () => {
     const allResponse = await axios.get('/api/admin/portfolios')
     allPortfolios.value = allResponse.data.portfolios || []
   } catch (error) {
-    alert('Gagal menghapus portofolio: ' + (error.response?.data?.message || 'Unknown error'))
+    showError('Gagal menghapus portofolio: ' + (error.response?.data?.message || 'Unknown error'))
   } finally {
     deleting.value = false
   }
@@ -640,10 +798,10 @@ const deletePortfolio = async () => {
 const verifyUser = async (id) => {
   try {
     await axios.post(`/api/admin/users/${id}/verify`)
-    alert('User berhasil diverifikasi')
+    showSuccess('User berhasil diverifikasi')
     await loadUsers()
   } catch (error) {
-    alert('Gagal memverifikasi user')
+    showError('Gagal memverifikasi user')
   }
 }
 
@@ -656,7 +814,7 @@ const createUser = async () => {
       password: userForm.value.password,
       role: userForm.value.role
     })
-    alert('User berhasil dibuat')
+    showSuccess('User berhasil dibuat')
     closeModal()
     await loadUsers()
     await loadStats()
@@ -664,9 +822,9 @@ const createUser = async () => {
     const message = error.response?.data?.message || 'Gagal membuat user'
     const errors = error.response?.data?.errors
     if (errors) {
-      alert(message + ': ' + Object.values(errors).flat().join(', '))
+      showError(message + ': ' + Object.values(errors).flat().join(', '))
     } else {
-      alert(message)
+      showError(message)
     }
   } finally {
     loading.value = false
@@ -674,14 +832,16 @@ const createUser = async () => {
 }
 
 const deleteUser = async (id) => {
-  if (!confirm('Yakin ingin menghapus user ini?')) return
+  const result = await showConfirm('Yakin ingin menghapus user ini?', 'Ya, Hapus', 'Batal')
+  if (!result.isConfirmed) return
+  
   try {
     await axios.delete(`/api/admin/users/${id}`)
-    alert('User berhasil dihapus')
+    showSuccess('User berhasil dihapus')
     await loadUsers()
     await loadStats()
   } catch (error) {
-    alert('Gagal menghapus user')
+    showError('Gagal menghapus user')
   }
 }
 
@@ -703,10 +863,10 @@ const getPublicUrl = (publicLink) => {
 const copyToClipboard = async (text) => {
   try {
     await navigator.clipboard.writeText(text)
-    alert('Link berhasil disalin ke clipboard!')
+    showSuccess('Link berhasil disalin ke clipboard!')
   } catch (error) {
     console.error('Failed to copy:', error)
-    alert('Gagal menyalin link')
+    showError('Gagal menyalin link')
   }
 }
 
@@ -731,18 +891,11 @@ const handleLogout = async () => {
 }
 
 .dashboard-gradient {
-  background: 
-    radial-gradient(ellipse 150% 80% at 50% 0%, 
-      #4c1d95 0%, 
-      #5b21b6 10%, 
-      #6b21a8 20%, 
-      #7c3aed 35%, 
-      #9333ea 50%, 
-      #a855f7 65%, 
-      #c084fc 80%, 
-      #ddd6fe 92%, 
-      #f3e8ff 98%, 
-      #ffffff 100%
-    );
+  background: radial-gradient(
+    ellipse 160% 120% at 50% -55%,
+    #000000 48%,
+    #50145C 60%,
+    #ffffff 80%
+  );
 }
 </style>

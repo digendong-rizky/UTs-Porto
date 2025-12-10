@@ -33,6 +33,9 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import axios from 'axios'
+import { useSweetAlert } from '@/composables/useSweetAlert'
+
+const { showError } = useSweetAlert()
 
 const router = useRouter()
 
@@ -69,9 +72,9 @@ const selectRole = async (role) => {
   } catch (error) {
     console.error('Gagal memilih role:', error)
     if (error.response?.data?.message) {
-      alert('Error: ' + error.response.data.message)
+      showError('Error: ' + error.response.data.message)
     } else {
-      alert('Gagal memilih role. Silakan coba lagi.')
+      showError('Gagal memilih role. Silakan coba lagi.')
     }
     
     // If unauthorized, redirect to login

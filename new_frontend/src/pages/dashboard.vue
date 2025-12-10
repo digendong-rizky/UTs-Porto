@@ -65,18 +65,11 @@ const handleLogout = async () => {
 }
 
 .dashboard-gradient {
-  background: 
-    radial-gradient(ellipse 150% 80% at 50% 0%, 
-      #4c1d95 0%, 
-      #5b21b6 10%, 
-      #6b21a8 20%, 
-      #7c3aed 35%, 
-      #9333ea 50%, 
-      #a855f7 65%, 
-      #c084fc 80%, 
-      #ddd6fe 92%, 
-      #f3e8ff 98%, 
-      #ffffff 100%
-    );
+  background: radial-gradient(
+    ellipse 160% 120% at 50% -55%,
+    #000000 48%,
+    #50145C 60%,
+    #ffffff 80%
+  );
 }
 </style>

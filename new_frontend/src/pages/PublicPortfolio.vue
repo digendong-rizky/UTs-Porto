@@ -1,11 +1,11 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <!-- Header with Back Button -->
-    <header class="bg-white shadow-sm mb-4">
-      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+  <div class="min-h-screen dashboard-gradient flex flex-col">
+    <!-- NAVBAR -->
+    <header class="fixed top-6 left-0 right-0 z-50">
+      <nav class="max-w-6xl mx-auto py-3 px-6 bg-white rounded-full flex justify-between items-center shadow-lg">
         <button 
           @click="goBack" 
-          class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 flex items-center gap-2"
+          class="text-gray-700 hover:text-purple-700 transition flex items-center gap-2"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -14,17 +14,17 @@
         </button>
         <button 
           @click="viewProfile" 
-          class="bg-white border-2 border-purple-700 text-purple-700 px-6 py-2 rounded-lg hover:bg-purple-50 font-semibold"
+          class="bg-purple-700 text-white px-6 py-2 rounded-full hover:bg-purple-800 font-semibold transition"
         >
           Lihat Profil
         </button>
-      </div>
+      </nav>
     </header>
 
-    <div v-if="loading" class="flex items-center justify-center min-h-screen">
-      <p>Memuat portofolio...</p>
+    <div v-if="loading" class="flex items-center justify-center flex-grow pt-32">
+      <p class="text-white text-lg">Memuat portofolio...</p>
     </div>
-    <div v-else-if="portfolio" class="max-w-4xl mx-auto px-4 py-8">
+    <div v-else-if="portfolio" class="w-[64rem] mx-auto px-6 py-8 pt-32 flex-grow">
       <div class="bg-white rounded-lg shadow-lg p-8">
         <!-- Portfolio Header -->
         <div v-if="portfolio.nama" class="text-center mb-6 pb-4 border-b">
@@ -213,9 +213,36 @@
         </div>
       </div>
     </div>
-    <div v-else class="flex items-center justify-center min-h-screen">
-      <p class="text-red-600">Portofolio tidak ditemukan</p>
+    <div v-else class="flex items-center justify-center flex-grow pt-32">
+      <p class="text-red-600 text-lg">Portofolio tidak ditemukan</p>
     </div>
+
+    <!-- FOOTER -->
+    <footer class="bg-purple-900 text-white py-16 font-roboto mt-auto">
+      <div class="max-w-6xl mx-auto px-6">
+        <div class="mb-12">
+          <h3 class="text-2xl md:text-3xl font-bold font-poppins mb-4">Informasi Kontak</h3>
+          <ul class="space-y-2 text-gray-300">
+            <li>Email : <a href="mailto:unika@unika.ac.id" class="hover:text-purple-300 transition">unika@unika.ac.id</a></li>
+            <li>Hotline : (024) 850 5003</li>
+            <li>WhatsApp Official : <a href="https://wa.me/6281232345479" class="hover:text-purple-300 transition">08123 2345 479</a></li>
+          </ul>
+        </div>
+
+        <div class="flex items-center justify-center gap-4 mb-8">
+          <div class="flex flex-col text-3xl font-poppins text-white">
+            <span>Porto</span>
+            <span>Connect</span>
+          </div>
+          <span class="text-3xl text-white">×</span>
+          <div class="flex items-center gap-2">
+            <img src="@/assets/logo-soegija-putih.png" alt="Logo SCU" class="h-16" />
+          </div>
+        </div>
+      </div>
+
+      <div class="border-t border-purple-800 mt-12 pt-8 text-center text-gray-500 text-sm">&copy; 2025 PortoConnect. All rights reserved.</div>
+    </footer>
   </div>
 </template>
 
@@ -223,6 +250,9 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
+import { useSweetAlert } from '@/composables/useSweetAlert'
+
+const { showSuccess, showError } = useSweetAlert()
 
 const route = useRoute()
 const router = useRouter()
@@ -358,9 +388,25 @@ const downloadPDF = async () => {
     document.body.removeChild(link)
     window.URL.revokeObjectURL(url)
     
-    alert('PDF berhasil diunduh')
+    showSuccess('PDF berhasil diunduh')
   } catch (error) {
-    alert('Gagal membuat PDF: ' + (error.response?.data?.message || 'Unknown error'))
+    showError('Gagal membuat PDF: ' + (error.response?.data?.message || 'Unknown error'))
   }
 }
 </script>
+
+<style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Roboto:wght@400&display=swap');
+
+.font-poppins { font-family: 'Poppins', sans-serif; }
+.font-roboto { font-family: 'Roboto', sans-serif; }
+
+.dashboard-gradient {
+  background: radial-gradient(
+    ellipse 160% 120% at 50% -55%,
+    #000000 48%,
+    #50145C 60%,
+    #ffffff 80%
+  );
+}
+</style>

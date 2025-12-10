@@ -30,7 +30,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- Add Portfolio Button -->
       <div class="mb-6 flex justify-end">
-        <button @click="showCreateModal = true" class="bg-white border-2 border-purple-700 text-purple-700 px-6 py-3 rounded-lg hover:bg-purple-50 font-semibold">
+        <button @click="goToCreatePortfolio" class="bg-white border-2 border-purple-700 text-purple-700 px-6 py-3 rounded-lg hover:bg-purple-50 font-semibold">
           + Buat Portofolio Baru
         </button>
       </div>
@@ -38,7 +38,7 @@
       <!-- Portfolio List -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div
-          v-for="portfolio in portfolios"
+          v-for="portfolio in paginatedPortfolios"
           :key="portfolio.id"
           class="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-lg transition"
           @click="viewPortfolio(portfolio)"
@@ -91,61 +91,33 @@
       <div v-if="portfolios.length === 0" class="text-center py-12">
         <p class="text-gray-500 text-lg">Belum ada portofolio. Buat portofolio pertama Anda!</p>
       </div>
-    </div>
 
-    <!-- Create Portfolio Modal -->
-    <div v-if="showCreateModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-6 w-full max-w-md">
-        <h3 class="text-xl font-bold mb-4">Buat Portofolio Baru</h3>
-        <form @submit.prevent="createPortfolio">
-          <div class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Nama Portofolio</label>
-              <input
-                v-model="portfolioForm.nama"
-                type="text"
-                required
-                class="w-full border rounded-lg px-3 py-2"
-                placeholder="Contoh: Portofolio Web Developer"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Bidang</label>
-              <select v-model="portfolioForm.bidang" class="w-full border rounded-lg px-3 py-2">
-                <option value="">Pilih Bidang</option>
-                <option value="backend">Backend</option>
-                <option value="frontend">Frontend</option>
-                <option value="fullstack">Fullstack</option>
-                <option value="QATester">QA Tester</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi Portofolio</label>
-              <textarea
-                v-model="portfolioForm.deskripsi"
-                rows="4"
-                class="w-full border rounded-lg px-3 py-2"
-                placeholder="Deskripsi tentang portofolio ini..."
-              ></textarea>
-            </div>
-          </div>
-          <div class="flex gap-2 mt-6">
-            <button
-              type="button"
-              @click="showCreateModal = false"
-              class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400"
-            >
-              Batal
-            </button>
-            <button
-              type="submit"
-              :disabled="loading"
-              class="flex-1 bg-purple-700 text-white px-4 py-2 rounded-lg hover:bg-purple-800 disabled:opacity-50"
-            >
-              {{ loading ? 'Membuat...' : 'Buat' }}
-            </button>
-          </div>
-        </form>
+      <!-- Pagination -->
+      <div v-if="portfolios.length > 10" class="mt-6 flex justify-between items-center">
+        <div class="text-sm text-gray-600">
+          Menampilkan {{ (currentPage - 1) * itemsPerPage + 1 }} - {{ Math.min(currentPage * itemsPerPage, portfolios.length) }} dari {{ portfolios.length }} portofolio
+        </div>
+        <div class="flex gap-2">
+          <button 
+            @click="currentPage = Math.max(1, currentPage - 1)"
+            :disabled="currentPage === 1"
+            :class="currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'"
+            class="px-4 py-2 border rounded-lg bg-white"
+          >
+            Sebelumnya
+          </button>
+          <span class="px-4 py-2 text-gray-700 bg-white border rounded-lg">
+            Halaman {{ currentPage }} dari {{ totalPages }}
+          </span>
+          <button 
+            @click="currentPage = Math.min(totalPages, currentPage + 1)"
+            :disabled="currentPage === totalPages"
+            :class="currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'"
+            class="px-4 py-2 border rounded-lg bg-white"
+          >
+            Selanjutnya
+          </button>
+        </div>
       </div>
     </div>
 
@@ -156,7 +128,7 @@
         <form @submit.prevent="updateProfile">
           <div class="space-y-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Nama</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Nama <span class="text-red-500">*</span></label>
               <input
                 v-model="profileForm.name"
                 type="text"
@@ -165,7 +137,7 @@
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Email <span class="text-red-500">*</span></label>
               <input
                 v-model="profileForm.email"
                 type="email"
@@ -175,69 +147,77 @@
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">NIM</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">NIM <span class="text-red-500">*</span></label>
                 <input
                   v-model="profileForm.nim"
                   type="text"
+                  required
                   class="w-full border rounded-lg px-3 py-2"
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">No. Telepon</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">No. Telepon <span class="text-red-500">*</span></label>
                 <input
                   v-model="profileForm.no_telp"
                   type="text"
+                  required
                   class="w-full border rounded-lg px-3 py-2"
                 />
               </div>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Universitas</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Universitas <span class="text-red-500">*</span></label>
               <input
                 v-model="profileForm.universitas"
                 type="text"
+                required
                 class="w-full border rounded-lg px-3 py-2"
               />
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Fakultas</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Fakultas <span class="text-red-500">*</span></label>
                 <input
                   v-model="profileForm.fakultas"
                   type="text"
+                  required
                   class="w-full border rounded-lg px-3 py-2"
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Jurusan</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Jurusan <span class="text-red-500">*</span></label>
                 <input
                   v-model="profileForm.jurusan"
                   type="text"
+                  required
                   class="w-full border rounded-lg px-3 py-2"
                 />
               </div>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Lahir</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Lahir <span class="text-red-500">*</span></label>
               <input
                 v-model="profileForm.tanggal_lahir"
                 type="date"
+                required
                 class="w-full border rounded-lg px-3 py-2"
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Alamat</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Alamat <span class="text-red-500">*</span></label>
               <textarea
                 v-model="profileForm.alamat"
                 rows="3"
+                required
                 class="w-full border rounded-lg px-3 py-2"
               ></textarea>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Bio (Deskripsi Diri)</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Bio (Deskripsi Diri) <span class="text-red-500">*</span></label>
               <textarea
                 v-model="profileForm.deskripsi_diri"
                 rows="4"
+                required
                 class="w-full border rounded-lg px-3 py-2"
               ></textarea>
             </div>
@@ -294,23 +274,35 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
+import { useSweetAlert } from '@/composables/useSweetAlert'
+
+const { showSuccess, showError, showWarning, showInfo, showConfirm } = useSweetAlert()
 
 const router = useRouter()
 const route = useRoute()
 const user = ref(null)
 const portfolios = ref([])
-const showCreateModal = ref(false)
+const currentPage = ref(1)
+const itemsPerPage = 10
+
+// Pagination computed
+const totalPages = computed(() => {
+  return Math.ceil(portfolios.value.length / itemsPerPage)
+})
+
+const paginatedPortfolios = computed(() => {
+  if (portfolios.value.length <= itemsPerPage) {
+    return portfolios.value
+  }
+  const start = (currentPage.value - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return portfolios.value.slice(start, end)
+})
 const showEditProfileModal = ref(false)
 const loading = ref(false)
-
-const portfolioForm = ref({
-  nama: '',
-  bidang: '',
-  deskripsi: ''
-})
 
 const profileForm = ref({
   name: '',
@@ -330,13 +322,6 @@ const profileForm = ref({
 
 onMounted(async () => {
   await loadData()
-  
-  // Check if should open create modal from query param
-  if (route.query.create === 'true') {
-    showCreateModal.value = true
-    // Remove query param from URL
-    router.replace({ query: {} })
-  }
 })
 
 const loadData = async () => {
@@ -394,7 +379,7 @@ const loadData = async () => {
       localStorage.removeItem('token')
       router.push('/login')
     } else {
-      alert('Gagal memuat data. Silakan refresh halaman.')
+      showError('Gagal memuat data. Silakan refresh halaman.')
     }
   }
 }
@@ -404,28 +389,15 @@ const loadPortfolios = async () => {
     const res = await axios.get('/api/mahasiswa/portfolios')
     console.log('Portfolio response:', res.data) // Debug log
     portfolios.value = res.data.portofolios || res.data.portfolios || []
+    // Reset to first page when loading new data
+    currentPage.value = 1
   } catch (error) {
     console.error('Error loading portfolios:', error)
     if (error.response?.status === 401) {
       router.push('/login')
     } else {
-      alert('Gagal memuat portofolio: ' + (error.response?.data?.message || 'Unknown error'))
+      showError('Gagal memuat portofolio: ' + (error.response?.data?.message || 'Unknown error'))
     }
-  }
-}
-
-const createPortfolio = async () => {
-  loading.value = true
-  try {
-    await axios.post('/api/mahasiswa/portfolios', portfolioForm.value)
-    alert('Portofolio berhasil dibuat')
-    showCreateModal.value = false
-    portfolioForm.value = { nama: '', bidang: '', deskripsi: '' }
-    await loadPortfolios()
-  } catch (error) {
-    alert('Gagal membuat portofolio: ' + (error.response?.data?.message || 'Unknown error'))
-  } finally {
-    loading.value = false
   }
 }
 
@@ -440,25 +412,55 @@ const viewPortfolio = (portfolio) => {
 }
 
 const deletePortfolio = async (id) => {
-  if (!confirm('Yakin ingin menghapus portofolio ini?')) return
+  const result = await showConfirm('Yakin ingin menghapus portofolio ini?', 'Ya, Hapus', 'Batal')
+  if (!result.isConfirmed) return
+  
   try {
     await axios.delete(`/api/mahasiswa/portfolios/${id}`)
-    alert('Portofolio berhasil dihapus')
+    showSuccess('Portofolio berhasil dihapus')
     await loadPortfolios()
   } catch (error) {
-    alert('Gagal menghapus portofolio')
+    showError('Gagal menghapus portofolio')
   }
 }
 
 const updateProfile = async () => {
+  // Validasi field wajib diisi
+  const requiredFields = {
+    'Nama': profileForm.value.name,
+    'Email': profileForm.value.email,
+    'NIM': profileForm.value.nim,
+    'No. Telepon': profileForm.value.no_telp,
+    'Universitas': profileForm.value.universitas,
+    'Fakultas': profileForm.value.fakultas,
+    'Jurusan': profileForm.value.jurusan,
+    'Tanggal Lahir': profileForm.value.tanggal_lahir,
+    'Alamat': profileForm.value.alamat,
+    'Bio (Deskripsi Diri)': profileForm.value.deskripsi_diri
+  }
+
+  // Cek field yang kosong
+  const emptyFields = []
+  for (const [fieldName, fieldValue] of Object.entries(requiredFields)) {
+    if (!fieldValue || (typeof fieldValue === 'string' && fieldValue.trim() === '')) {
+      emptyFields.push(fieldName)
+    }
+  }
+
+  // Tampilkan alert jika ada field yang kosong
+  if (emptyFields.length > 0) {
+    showWarning('Mohon lengkapi semua field yang wajib diisi:\n\n' + emptyFields.join('\n'))
+    return
+  }
+
   loading.value = true
   try {
     await axios.put('/api/mahasiswa/profile', profileForm.value)
-    alert('Profil berhasil diperbarui')
+    showSuccess('Profil berhasil diperbarui')
     showEditProfileModal.value = false
     await loadData()
   } catch (error) {
-    alert('Gagal memperbarui profil: ' + (error.response?.data?.message || 'Unknown error'))
+    showError('Gagal memperbarui profil: ' + (error.response?.data?.message || 'Unknown error'))
   } finally {
     loading.value = false
   }
@@ -475,7 +477,7 @@ const getPublicUrl = (publicLink) => {
 const copyLink = (publicLink) => {
   const url = getPublicUrl(publicLink)
   navigator.clipboard.writeText(url)
-  alert('Link berhasil disalin ke clipboard!')
+  showSuccess('Link berhasil disalin ke clipboard!')
 }
 
 const handleLogout = async () => {
@@ -487,6 +489,11 @@ const handleLogout = async () => {
     localStorage.removeItem('token')
     router.push('/login')
   }
+}
+
+const goToCreatePortfolio = () => {
+  // Langsung redirect ke halaman preview dengan ID "new"
+  router.push('/portfolio/preview/new')
 }
 </script>
 

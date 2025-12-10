@@ -1,206 +1,84 @@
+<!-- src/pages/Portofolio.vue -->
 <template>
-  <div class="min-h-screen bg-gray-50 flex flex-col">
-    <!-- Header -->
-    <header class="bg-white shadow-sm">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div class="flex justify-between items-center">
-          <div class="flex items-center gap-4">
-            <h1 class="text-2xl font-bold text-purple-700">Porto Connect</h1>
-            <span class="text-gray-400">×</span>
-            <div class="flex items-center gap-2">
-              <img src="@/assets/logo-soegija.png" alt="Logo" class="h-8" />
-              <span class="text-sm font-semibold">SOEGIJAPRANATA CATHOLIC UNIVERSITY</span>
-            </div>
-          </div>
-          <div class="flex items-center gap-6">
-            <router-link to="/" class="text-purple-700 font-semibold hover:text-purple-900">Home</router-link>
-            <router-link to="/explore" class="text-purple-700 font-semibold bg-purple-100 px-4 py-2 rounded-lg">Portofolio</router-link>
-            <div v-if="currentUser" class="flex items-center gap-2">
-              <router-link 
-                v-if="currentUser.role === 'mahasiswa'"
-                to="/profile/mahasiswa" 
-                class="text-gray-700 hover:text-purple-700"
-              >
-                Dashboard Saya
-              </router-link>
-              <router-link 
-                v-else-if="currentUser.role === 'perusahaan'"
-                to="/dashboard/perusahaan" 
-                class="text-gray-700 hover:text-purple-700"
-              >
-                Dashboard
-              </router-link>
-            </div>
-            <div v-else class="flex items-center gap-2">
-              <router-link to="/login" class="text-gray-700 hover:text-purple-700">Login</router-link>
-            </div>
+  <div class="page-portfolio">
+    <!-- NAVBAR (large rounded bar centered) -->
+    <header class="nav-wrap">
+      <div class="nav-bar">
+        <div class="nav-left">
+          <span class="brand">Porto Connect</span>
+          <img src="@/assets/logo-soegija.png" alt="soegija" class="nav-logo" />
+        </div>
+
+        <div class="nav-center">
+          <a class="nav-link">Home</a>
+          <a class="nav-link active">Portofolio</a>
+        </div>
+
+        <div class="nav-right">
+          <div class="user">
+            <div class="user-name">Dashboard</div>
           </div>
         </div>
       </div>
     </header>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow">
-      <div class="flex gap-6">
-        <!-- Sidebar Kategori -->
-        <aside class="w-64 bg-white rounded-lg shadow-sm p-4 h-fit sticky top-4">
-          <h3 class="font-bold text-gray-800 mb-4">Kategori Bidang</h3>
-          <ul class="space-y-2">
-            <li>
-              <button
-                @click="filterByBidang(null)"
-                :class="selectedBidang === null ? 'bg-purple-100 text-purple-700 font-semibold' : 'text-gray-700 hover:bg-gray-100'"
-                class="w-full text-left px-4 py-2 rounded-lg flex items-center gap-2 transition"
-              >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                Semua Bidang
-                <span class="ml-auto text-sm text-gray-500">({{ totalPortfolios }})</span>
-              </button>
-            </li>
-            <li>
-              <button
-                @click="filterByBidang('backend')"
-                :class="selectedBidang === 'backend' ? 'bg-purple-100 text-purple-700 font-semibold' : 'text-gray-700 hover:bg-gray-100'"
-                class="w-full text-left px-4 py-2 rounded-lg flex items-center gap-2 transition"
-              >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                Backend
-                <span class="ml-auto text-sm text-gray-500">({{ getCountByBidang('backend') }})</span>
-              </button>
-            </li>
-            <li>
-              <button
-                @click="filterByBidang('frontend')"
-                :class="selectedBidang === 'frontend' ? 'bg-purple-100 text-purple-700 font-semibold' : 'text-gray-700 hover:bg-gray-100'"
-                class="w-full text-left px-4 py-2 rounded-lg flex items-center gap-2 transition"
-              >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                Frontend
-                <span class="ml-auto text-sm text-gray-500">({{ getCountByBidang('frontend') }})</span>
-              </button>
-            </li>
-            <li>
-              <button
-                @click="filterByBidang('fullstack')"
-                :class="selectedBidang === 'fullstack' ? 'bg-purple-100 text-purple-700 font-semibold' : 'text-gray-700 hover:bg-gray-100'"
-                class="w-full text-left px-4 py-2 rounded-lg flex items-center gap-2 transition"
-              >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                Fullstack
-                <span class="ml-auto text-sm text-gray-500">({{ getCountByBidang('fullstack') }})</span>
-              </button>
-            </li>
-            <li>
-              <button
-                @click="filterByBidang('QATester')"
-                :class="selectedBidang === 'QATester' ? 'bg-purple-100 text-purple-700 font-semibold' : 'text-gray-700 hover:bg-gray-100'"
-                class="w-full text-left px-4 py-2 rounded-lg flex items-center gap-2 transition"
-              >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                QA Tester
-                <span class="ml-auto text-sm text-gray-500">({{ getCountByBidang('QATester') }})</span>
-              </button>
-            </li>
-          </ul>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="flex-1">
-          <h2 class="text-3xl font-bold text-gray-800 mb-6">Jelajahi Portofolio Mahasiswa</h2>
-          
-          <!-- Portfolio Grid -->
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div
-              v-for="portfolio in filteredPortfolios"
-              :key="portfolio.id"
-              class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer transform hover:scale-105"
-              @click="viewPortfolio(portfolio)"
-            >
-              <!-- Header dengan gradient background -->
-              <div class="h-32 bg-gradient-to-br from-purple-500 via-pink-500 to-blue-500 relative">
-                <div class="absolute inset-0 bg-black/20"></div>
-                <div class="absolute bottom-4 left-4 right-4">
-                  <h3 class="text-white font-bold text-lg">{{ portfolio.nama || 'Portofolio' }}</h3>
-                </div>
-              </div>
-
-              <!-- Content -->
-              <div class="p-4">
-                <div class="flex items-start gap-3 mb-3">
-                  <!-- Profile Picture -->
-                  <div class="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white text-xl font-bold flex-shrink-0">
-                    {{ portfolio.mahasiswa?.user?.name?.charAt(0)?.toUpperCase() || 'U' }}
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <h4 class="font-bold text-gray-800 truncate">{{ portfolio.mahasiswa?.user?.name }}</h4>
-                    <p class="text-sm text-gray-600">{{ portfolio.mahasiswa?.universitas || portfolio.mahasiswa?.jurusan || '-' }}</p>
-                  </div>
-                  <!-- Public Icon -->
-                  <svg class="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                  </svg>
-                </div>
-
-                <!-- Bidang Badge -->
-                <div v-if="portfolio.bidang" class="mb-3">
-                  <span class="inline-block bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-semibold">
-                    {{ portfolio.bidang }}
-                  </span>
-                </div>
-
-                <!-- Deskripsi Singkat -->
-                <p v-if="portfolio.deskripsi" class="text-sm text-gray-600 mb-3 line-clamp-2">
-                  {{ portfolio.deskripsi }}
-                </p>
-
-                <!-- Skills -->
-                <div v-if="portfolio.skills && portfolio.skills.length > 0" class="flex flex-wrap gap-2">
-                  <span
-                    v-for="skill in portfolio.skills.slice(0, 3)"
-                    :key="skill.id"
-                    class="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded"
-                  >
-                    {{ skill.nama }}
-                  </span>
-                  <span v-if="portfolio.skills.length > 3" class="text-xs text-gray-500">
-                    +{{ portfolio.skills.length - 3 }} lainnya
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div v-if="filteredPortfolios.length === 0" class="text-center text-gray-500 py-12">
-            <p>Tidak ada portofolio yang ditemukan</p>
-          </div>
-        </main>
+    <!-- SEARCH ROW -->
+    <section class="search-row">
+      <div class="search-inner">
+        <button class="search-pill">Job</button>
+        <button class="search-input">CV</button>
       </div>
-    </div>
+    </section>
 
-    <!-- Footer -->
-    <footer class="bg-purple-900 py-8 mt-auto">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div>
-            <h4 class="text-white font-bold mb-4">Informasi Kontak</h4>
-            <p class="text-white/80">Email : unika@unika.ac.id</p>
-            <p class="text-white/80">WhatsApp Official : 08123-2345-479</p>
+    <!-- MAIN: sidebar + purple-panel containing cards -->
+    <main class="main-wrap">
+      <!-- left vertical list with gradient and scroll -->
+      <aside class="left-sidebar" aria-hidden="true">
+        <div class="sidebar-scroll">
+          <div v-for="i in 20" :key="i" class="sidebar-item">
+            <span class="si-left">Logo Role</span>
+            <span class="si-text">Full Stack</span>
+            <span class="si-count">10</span>
           </div>
-          <div class="flex items-center gap-4">
-            <h1 class="text-2xl font-bold text-white">Porto Connect</h1>
-            <span class="text-white">×</span>
-            <div class="flex items-center gap-2">
-              <img src="@/assets/logo-soegija-putih.png" alt="Logo" class="h-8" />
-              <span class="text-white text-sm font-semibold">SOEGIJAPRANATA CATHOLIC UNIVERSITY</span>
+        </div>
+      </aside>
+
+      <!-- cards container (purple rounded big panel like figma) -->
+      <section class="cards-panel">
+        <div class="cards-inner">
+          <div class="cards-grid">
+            <article v-for="i in 9" :key="i" class="card">
+              <div class="card-thumb" :style="{ backgroundImage: 'url(@/assets/card-sample.jpg)' }"></div>
+              <div class="card-footer">
+                <img src="@/assets/team1.jpg" alt="avatar" class="card-avatar" />
+                <div class="card-texts">
+                  <div class="card-name">Michelle Gore</div>
+                  <div class="card-sub">UC Davis</div>
+                </div>
+                <div class="card-icon">◦</div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- footer - contact + logo bar -->
+    <footer class="page-footer">
+      <div class="footer-inner">
+        <div class="contact">
+          <h3>Informasi Kontak</h3>
+          <div class="c-line">Email : realchrisplays@gmail.com</div>
+          <div class="c-line">WhatsApp Official : 08123-2345-479</div>
+        </div>
+
+        <div class="footer-logos">
+          <div class="porto">Porto<br/>Connect</div>
+          <div class="x">✕</div>
+          <div class="uni">
+            <div class="uni-text">
+              <div class="muted">SOEGIJAPRANATA</div>
+              <div class="muted">CATHOLIC UNIVERSITY</div>
             </div>
           </div>
         </div>
@@ -210,99 +88,198 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import axios from 'axios'
-
-const router = useRouter()
-const portfolios = ref([])
-const allPortfolios = ref([]) // Store all portfolios for counting
-const currentUser = ref(null)
-const selectedBidang = ref(null)
-
-onMounted(async () => {
-  const token = localStorage.getItem('token')
-  if (token) {
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-    try {
-      const res = await axios.get('/api/me')
-      currentUser.value = res.data.user
-    } catch (error) {
-      // Not logged in, continue
-    }
-  }
-  await loadPortfolios()
-})
-
-const loadPortfolios = async (bidang = null) => {
-  try {
-    const params = bidang ? { bidang } : {}
-    const response = await axios.get('/api/portfolios/public', { params })
-    
-    // Ensure we have the data structure
-    if (response.data && Array.isArray(response.data.portfolios)) {
-      portfolios.value = response.data.portfolios
-    } else if (Array.isArray(response.data)) {
-      portfolios.value = response.data
-    } else {
-      portfolios.value = []
-    }
-    
-    // Load all portfolios for counting if not already loaded
-    if (allPortfolios.value.length === 0) {
-      const allResponse = await axios.get('/api/portfolios/public')
-      if (allResponse.data && Array.isArray(allResponse.data.portfolios)) {
-        allPortfolios.value = allResponse.data.portfolios
-      } else if (Array.isArray(allResponse.data)) {
-        allPortfolios.value = allResponse.data
-      } else {
-        allPortfolios.value = []
-      }
-    }
-  } catch (error) {
-    console.error('Error loading portfolios:', error)
-    console.error('Error response:', error.response?.data)
-    portfolios.value = []
-    allPortfolios.value = []
-    
-    // Show user-friendly error message
-    const errorMessage = error.response?.data?.message || error.message || 'Gagal memuat portofolio'
-    if (!errorMessage.includes('Unclosed')) {
-      alert('Gagal memuat portofolio: ' + errorMessage)
-    }
-  }
-}
-
-const filterByBidang = (bidang) => {
-  selectedBidang.value = bidang
-  loadPortfolios(bidang)
-}
-
-const filteredPortfolios = computed(() => {
-  return portfolios.value
-})
-
-const totalPortfolios = computed(() => {
-  return allPortfolios.value.length
-})
-
-const getCountByBidang = (bidang) => {
-  return allPortfolios.value.filter(p => p.bidang === bidang).length
-}
-
-const viewPortfolio = (portfolio) => {
-  if (portfolio.public_link) {
-    router.push(`/portfolio/${portfolio.public_link}`)
-  }
-}
+defineOptions({ name: 'PortfolioPage' })
+/* intentionally no unused imports */
 </script>
 
 <style scoped>
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+/* PAGE BACKGROUND - match Figma vertical gradient feel */
+.page-portfolio {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient( circle at 50% -20%,
+    #000 2%,
+    #50145c 18%,
+    #5b1e62 36%,
+    #5b1e62 50%,
+    #ffffff 100%
+  );
+  color: #111;
+  font-family: 'Poppins', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+/* NAVBAR: big rounded pill centered */
+.nav-wrap { padding: 28px 0; }
+.nav-bar {
+  width: min(1200px, 94%);
+  margin: 0 auto;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background: rgba(255,255,255,0.95);
+  border-radius: 26px;
+  padding: 12px 28px;
+  box-shadow: 0 8px 30px rgba(6,6,10,0.12);
+  height: 64px;
+}
+.nav-left, .nav-center, .nav-right { display:flex; align-items:center; gap:14px; }
+.brand { font-weight:700; color:#5e1f62; }
+.nav-logo { height:26px; }
+.nav-center { gap:28px; margin-left: 14px;}
+.nav-link { color:#222; opacity:0.9; }
+.nav-link.active { font-weight:700; }
+
+/* search row */
+.search-row { margin-top: 20px; }
+.search-inner {
+  width: min(1200px, 94%);
+  margin: 0 auto;
+  display:flex;
+  gap:18px;
+  align-items:center;
+  padding: 4px 12px;
+}
+.search-pill {
+  min-width:86px;
+  padding:10px 18px;
+  border-radius:999px;
+  background: #ffffff;
+  border:none;
+  box-shadow: 0 8px 20px rgba(6,6,10,0.06);
+}
+.search-input {
+  flex:1;
+  height: 42px;
+  border-radius: 999px;
+  padding: 0 20px;
+  border: 2px solid rgba(0,0,0,0.8);
+  background: white;
+  color: #222;
+  box-shadow: 0 8px 20px rgba(6,6,10,0.06);
+}
+
+/* MAIN LAYOUT: sidebar + purple-panel */
+.main-wrap {
+  width: min(1200px, 94%);
+  margin: 28px auto;
+  display:grid;
+  grid-template-columns: 220px 1fr;
+  gap: 28px;
+  align-items:start;
+}
+
+/* Left sidebar: gradient, rounded, scrollbar */
+.left-sidebar {
+  border-radius: 18px;
+  padding: 14px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+  box-shadow: 0 20px 60px rgba(6,6,10,0.06);
+  height: calc(100vh - 360px);
   overflow: hidden;
 }
-</style>
+.sidebar-scroll {
+  height:100%;
+  overflow:auto;
+  padding-right:8px;
+}
+.sidebar-item {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding: 12px;
+  margin-bottom: 12px;
+  color: rgba(255,255,255,0.9);
+  opacity: 0.92;
+  border-radius: 12px;
+}
 
+/* Cards panel: big purple rounded holder like Figma */
+.cards-panel {
+  border-radius: 26px;
+  background: linear-gradient(180deg, rgba(90,25,78,0.85), rgba(187,135,180,0.15));
+  padding: 28px;
+  box-shadow: 0 30px 80px rgba(6,6,10,0.12);
+}
+.cards-inner {
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.04));
+  padding: 18px;
+  border-radius: 18px;
+}
+.cards-grid {
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+}
+
+/* individual card: white rounded with thumb + footer */
+.card {
+  background: #fff;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 16px 40px rgba(6,6,10,0.08);
+  display:flex;
+  flex-direction:column;
+  min-height: 220px;
+}
+.card-thumb {
+  height: 140px;
+  background-size: cover;
+  background-position: center;
+}
+.card-footer {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding: 12px 16px;
+}
+.card-avatar {
+  width:44px; height:44px; border-radius:999px; object-fit:cover; border:3px solid #fff;
+}
+.card-texts .card-name { font-weight:700; color:#111; }
+.card-sub { font-size:13px; color:#777; margin-top:4px; }
+.card-icon { margin-left:auto; color:#bbb; }
+
+/* footer */
+.page-footer {
+  margin-top: 48px;
+  background: #4b1545;
+  color:#fff;
+  padding: 48px 0;
+}
+.footer-inner {
+  width: min(1200px, 94%);
+  margin: 0 auto;
+  display:flex;
+  flex-direction:column;
+  gap:28px;
+  align-items:center;
+}
+.contact { align-self:flex-start; }
+.contact h3 { margin:0 0 6px 0; font-weight:700; }
+.footer-logos {
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:36px;
+  padding-top: 8px;
+}
+.porto { font-weight:700; font-size:20px; text-align:center; }
+.x { font-size:34px; color:#fff; transform:translateY(6px); }
+.uni img { height:48px; margin-right:12px; }
+.uni-text .muted { font-size:20px; opacity:0.85; }
+
+/* responsive */
+@media (max-width: 1000px) {
+  .cards-grid { grid-template-columns: repeat(2, 1fr); }
+  .main-wrap { grid-template-columns: 160px 1fr; }
+}
+@media (max-width: 720px) {
+  .nav-bar { padding: 8px 14px; height:58px; }
+  .main-wrap { grid-template-columns: 1fr; }
+  .left-sidebar { display:none; }
+  .cards-grid { grid-template-columns: 1fr; }
+  .search-inner { flex-direction:column; gap:12px; align-items:stretch; }
+}
+</style>

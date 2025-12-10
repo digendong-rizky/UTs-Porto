@@ -366,6 +366,9 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
+import { useSweetAlert } from '@/composables/useSweetAlert'
+
+const { showSuccess, showError, showWarning, showInfo, showConfirm } = useSweetAlert()
 
 const router = useRouter()
 const route = useRoute()
@@ -420,21 +423,58 @@ const experienceForm = ref({
 })
 
 onMounted(async () => {
-  await loadPortfolio()
+  // Jika ID adalah "new", buat portfolio baru terlebih dahulu
+  if (route.params.id === 'new') {
+    await createNewPortfolio()
+  } else {
+    await loadPortfolio()
+  }
   // Set flag setelah load selesai
   setTimeout(() => {
     isInitialLoad.value = false
   }, 500)
 })
 
-const loadPortfolio = async (preserveFormData = false) => {
+const createNewPortfolio = async () => {
   try {
     const token = localStorage.getItem('token')
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
     }
 
-    const res = await axios.get(`/api/mahasiswa/portfolios/${route.params.id}`)
+    // Buat portfolio baru dengan default values
+    const res = await axios.post('/api/mahasiswa/portfolios', {
+      nama: 'Portofolio Baru',
+      bidang: '',
+      deskripsi: ''
+    })
+
+    // Dapatkan ID portfolio yang baru dibuat
+    const portfolioId = res.data.portofolio?.id || res.data.portfolio?.id
+    if (portfolioId) {
+      // Load portfolio langsung dengan ID yang baru dibuat (sebelum replace route)
+      await loadPortfolioById(portfolioId)
+      // Replace route dengan ID yang benar setelah load selesai
+      router.replace(`/portfolio/preview/${portfolioId}`)
+    } else {
+      showError('Gagal membuat portofolio baru')
+      router.push('/portfolio/list')
+    }
+  } catch (error) {
+    console.error('Error creating portfolio:', error)
+    showError('Gagal membuat portofolio baru: ' + (error.response?.data?.message || 'Unknown error'))
+    router.push('/portfolio/list')
+  }
+}
+
+const loadPortfolioById = async (portfolioId, preserveFormData = false) => {
+  try {
+    const token = localStorage.getItem('token')
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+    }
+
+    const res = await axios.get(`/api/mahasiswa/portfolios/${portfolioId}`)
     portfolio.value = res.data.portofolio
     
     // Only update form if not preserving form data
@@ -463,6 +503,15 @@ const loadPortfolio = async (preserveFormData = false) => {
       router.push('/login')
     }
   }
+}
+
+const loadPortfolio = async (preserveFormData = false) => {
+  // Jangan load jika ID masih "new"
+  if (route.params.id === 'new') {
+    return
+  }
+  
+  await loadPortfolioById(route.params.id, preserveFormData)
 }
 
 // Auto-save function dengan debounce
@@ -514,17 +563,17 @@ const togglePublic = async () => {
       // If setting to public, generate link first
       await axios.post(`/api/mahasiswa/portfolios/${route.params.id}/generate-link`)
       await loadPortfolio(true) // Preserve form data
-      alert('Portofolio berhasil dijadikan public dan link telah dibuat')
+      showSuccess('Portofolio berhasil dijadikan public dan link telah dibuat')
     } else {
       // If setting to private, just update status
       await axios.put(`/api/mahasiswa/portfolios/${route.params.id}`, {
         is_public: false
       })
       portfolio.value.is_public = false
-      alert('Portofolio berhasil dijadikan private')
+      showSuccess('Portofolio berhasil dijadikan private')
     }
   } catch (error) {
-    alert('Gagal mengubah status portofolio')
+    showError('Gagal mengubah status portofolio')
   }
 }
 
@@ -538,7 +587,7 @@ const publicUrl = computed(() => {
 const copyPublicLink = () => {
   if (publicUrl.value) {
     navigator.clipboard.writeText(publicUrl.value)
-    alert('Link berhasil disalin ke clipboard!')
+    showSuccess('Link berhasil disalin ke clipboard!')
   }
 }
 
@@ -546,9 +595,9 @@ const regenerateLink = async () => {
   try {
     await axios.post(`/api/mahasiswa/portfolios/${route.params.id}/generate-link`)
     await loadPortfolio(true) // Preserve form data
-    alert('Link publik berhasil dibuat ulang')
+    showSuccess('Link publik berhasil dibuat ulang')
   } catch (error) {
-    alert('Gagal membuat link baru')
+    showError('Gagal membuat link baru')
   }
 }
 
@@ -556,10 +605,11 @@ const updatePortfolio = async () => {
   loading.value = true
   try {
     await axios.put(`/api/mahasiswa/portfolios/${route.params.id}`, portfolioForm.value)
-    alert('Portofolio berhasil diperbarui')
-    await loadPortfolio()
+    showSuccess('Portofolio berhasil diperbarui')
+    // Redirect ke halaman list setelah save
+    router.push('/portfolio/list')
   } catch (error) {
-    alert('Gagal memperbarui portofolio')
+    showError('Gagal memperbarui portofolio')
   } finally {
     loading.value = false
   }
@@ -584,9 +634,9 @@ const downloadPDF = async () => {
     document.body.removeChild(link)
     window.URL.revokeObjectURL(url)
     
-    alert('PDF berhasil diunduh')
+    showSuccess('PDF berhasil diunduh')
   } catch (error) {
-    alert('Gagal membuat PDF: ' + (error.response?.data?.message || 'Unknown error'))
+    showError('Gagal membuat PDF: ' + (error.response?.data?.message || 'Unknown error'))
   }
 }
 
@@ -632,10 +682,10 @@ const saveProject = async () => {
     
     if (editingProject.value) {
       await axios.put(`/api/mahasiswa/projects/${editingProject.value.id}`, data)
-      alert('Project berhasil diperbarui')
+      showSuccess('Project berhasil diperbarui')
     } else {
       await axios.post('/api/mahasiswa/projects', data)
-      alert('Project berhasil ditambahkan')
+      showSuccess('Project berhasil ditambahkan')
     }
                 closeProjectModal()
                 await loadPortfolio(true) // Preserve form data
@@ -644,21 +694,23 @@ const saveProject = async () => {
     const errors = error.response?.data?.errors
     if (errors) {
       const errorList = Object.values(errors).flat().join(', ')
-      alert(`${errorMessage}: ${errorList}`)
+      showError(`${errorMessage}: ${errorList}`)
     } else {
-      alert(errorMessage)
+      showError(errorMessage)
     }
     console.error('Error saving project:', error)
   }
 }
 
 const deleteProject = async (id) => {
-  if (!confirm('Yakin ingin menghapus project ini?')) return
+  const result = await showConfirm('Yakin ingin menghapus project ini?', 'Ya, Hapus', 'Batal')
+  if (!result.isConfirmed) return
+  
   try {
     await axios.delete(`/api/mahasiswa/projects/${id}`)
     await loadPortfolio(true) // Preserve form data
   } catch (error) {
-    alert('Gagal menghapus project')
+    showError('Gagal menghapus project')
   }
 }
 
@@ -683,25 +735,27 @@ const saveSkill = async () => {
     const data = { ...skillForm.value, portofolio_id: route.params.id }
     if (editingSkill.value) {
       await axios.put(`/api/mahasiswa/skills/${editingSkill.value.id}`, data)
-      alert('Skill berhasil diperbarui')
+      showSuccess('Skill berhasil diperbarui')
     } else {
       await axios.post('/api/mahasiswa/skills', data)
-      alert('Skill berhasil ditambahkan')
+      showSuccess('Skill berhasil ditambahkan')
     }
                 closeSkillModal()
                 await loadPortfolio(true) // Preserve form data
   } catch (error) {
-    alert('Gagal menyimpan skill')
+    showError('Gagal menyimpan skill')
   }
 }
 
 const deleteSkill = async (id) => {
-  if (!confirm('Yakin ingin menghapus skill ini?')) return
+  const result = await showConfirm('Yakin ingin menghapus skill ini?', 'Ya, Hapus', 'Batal')
+  if (!result.isConfirmed) return
+  
   try {
     await axios.delete(`/api/mahasiswa/skills/${id}`)
     await loadPortfolio(true) // Preserve form data
   } catch (error) {
-    alert('Gagal menghapus skill')
+    showError('Gagal menghapus skill')
   }
 }
 
@@ -726,25 +780,27 @@ const saveCertificate = async () => {
     const data = { ...certificateForm.value, portofolio_id: route.params.id }
     if (editingCertificate.value) {
       await axios.put(`/api/mahasiswa/certificates/${editingCertificate.value.id}`, data)
-      alert('Certificate berhasil diperbarui')
+      showSuccess('Certificate berhasil diperbarui')
     } else {
       await axios.post('/api/mahasiswa/certificates', data)
-      alert('Certificate berhasil ditambahkan')
+      showSuccess('Certificate berhasil ditambahkan')
     }
                 closeCertificateModal()
                 await loadPortfolio(true) // Preserve form data
   } catch (error) {
-    alert('Gagal menyimpan certificate')
+    showError('Gagal menyimpan certificate')
   }
 }
 
 const deleteCertificate = async (id) => {
-  if (!confirm('Yakin ingin menghapus certificate ini?')) return
+  const result = await showConfirm('Yakin ingin menghapus certificate ini?', 'Ya, Hapus', 'Batal')
+  if (!result.isConfirmed) return
+  
   try {
     await axios.delete(`/api/mahasiswa/certificates/${id}`)
     await loadPortfolio(true) // Preserve form data
   } catch (error) {
-    alert('Gagal menghapus certificate')
+    showError('Gagal menghapus certificate')
   }
 }
 
@@ -803,10 +859,10 @@ const saveExperience = async () => {
     
     if (editingExperience.value) {
       await axios.put(`/api/mahasiswa/experiences/${editingExperience.value.id}`, data)
-      alert('Experience berhasil diperbarui')
+      showSuccess('Experience berhasil diperbarui')
     } else {
       await axios.post('/api/mahasiswa/experiences', data)
-      alert('Experience berhasil ditambahkan')
+      showSuccess('Experience berhasil ditambahkan')
     }
                 closeExperienceModal()
                 await loadPortfolio(true) // Preserve form data
@@ -815,21 +871,23 @@ const saveExperience = async () => {
     const errors = error.response?.data?.errors
     if (errors) {
       const errorList = Object.values(errors).flat().join(', ')
-      alert(`${errorMessage}: ${errorList}`)
+      showError(`${errorMessage}: ${errorList}`)
     } else {
-      alert(errorMessage)
+      showError(errorMessage)
     }
     console.error('Error saving experience:', error)
   }
 }
 
 const deleteExperience = async (id) => {
-  if (!confirm('Yakin ingin menghapus experience ini?')) return
+  const result = await showConfirm('Yakin ingin menghapus experience ini?', 'Ya, Hapus', 'Batal')
+  if (!result.isConfirmed) return
+  
   try {
     await axios.delete(`/api/mahasiswa/experiences/${id}`)
     await loadPortfolio(true) // Preserve form data
   } catch (error) {
-    alert('Gagal menghapus experience')
+    showError('Gagal menghapus experience')
   }
 }
 </script>

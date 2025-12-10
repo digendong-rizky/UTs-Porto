@@ -2,7 +2,6 @@ import { createRouter, createWebHistory } from 'vue-router'
 import axios from 'axios'
 import Home from '@/pages/Home.vue'
 import Login from '@/pages/login.vue'
-import Register from '@/pages/register.vue'
 import Dashboard from '@/pages/dashboard.vue'
 import MahasiswaProfile from '@/pages/MahasiswaProfile.vue'
 import ExplorePortfolio from '@/pages/ExplorePortfolio.vue'
@@ -24,11 +23,6 @@ const routes = [
     path: '/login',
     name: 'Login',
     component: Login,
-  },
-  {
-    path: '/register',
-    name: 'Register',
-    component: Register,
   },
   {
     path: '/dashboard',
@@ -101,7 +95,7 @@ router.beforeEach(async (to, from, next) => {
   const token = localStorage.getItem('token')
   
   // Jika route memerlukan auth tapi tidak ada token
-  const publicRoutes = ['/', '/login', '/register', '/explore', '/portfolio/:publicLink', '/auth/callback']
+  const publicRoutes = ['/', '/login', '/explore', '/portfolio/:publicLink', '/auth/callback']
   const isPublicRoute = publicRoutes.some(route => {
     if (route.includes(':')) {
       const routePattern = route.replace(/:[^/]+/g, '[^/]+')
@@ -111,7 +105,7 @@ router.beforeEach(async (to, from, next) => {
     return to.path === route
   })
   
-  if (!token && !isPublicRoute && to.path !== '/login' && to.path !== '/register') {
+  if (!token && !isPublicRoute && to.path !== '/login') {
     next('/login')
     return
   }

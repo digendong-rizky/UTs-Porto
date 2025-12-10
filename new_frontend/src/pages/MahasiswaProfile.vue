@@ -1,39 +1,57 @@
 <template>
   <div class="min-h-screen dashboard-gradient flex flex-col">
-    <!-- Header -->
-    <header class="bg-gray-100 rounded-b-lg shadow-sm mb-8">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div class="flex justify-between items-center">
-          <div class="flex items-center gap-4">
-            <h1 class="text-2xl font-bold text-purple-700">Porto Connect</h1>
-            <span class="text-gray-400">×</span>
-            <div class="flex items-center gap-2">
-              <img src="@/assets/logo-soegija.png" alt="Logo" class="h-8" />
-              <span class="text-sm font-semibold">SOEGIJAPRANATA CATHOLIC UNIVERSITY</span>
-            </div>
-          </div>
-          <div class="flex items-center gap-6">
-            <router-link to="/" class="text-gray-700 hover:text-purple-700">Home</router-link>
-            <router-link to="/explore" class="text-gray-700 hover:text-purple-700">Portofolio</router-link>
-            <div class="flex items-center gap-2 bg-gray-200 px-4 py-2 rounded-lg">
-              <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white">
-                {{ user?.name?.charAt(0) || 'U' }}
-              </div>
-              <span class="font-semibold">{{ user?.name || 'User' }}</span>
-            </div>
+    <!-- NAVBAR -->
+    <header class="fixed top-6 left-0 right-0 z-50">
+      <nav class="max-w-6xl mx-auto py-3 px-6 bg-white rounded-full flex justify-between items-center shadow-lg">
+        <div class="flex items-center gap-3">
+          <span class="text-xl font-bold font-poppins text-purple-700">Porto Connect</span>
+          <img src="@/assets/logo-soegija.png" alt="Soegijapranata Logo" class="h-8" />
+        </div>
+
+        <div class="hidden md:flex items-center gap-8 font-roboto">
+          <router-link to="/" class="text-gray-700 hover:text-purple-700 transition">Home</router-link>
+          <router-link 
+            v-if="!user || user.role !== 'perusahaan'"
+            to="/explore" 
+            class="text-gray-700 hover:text-purple-700 transition"
+          >
+            Portofolio
+          </router-link>
+        </div>
+
+        <div class="flex items-center gap-1 bg-black rounded-full py-1.5 px-2 font-roboto">
+          <div v-if="user">
+            <router-link 
+              v-if="user.role === 'mahasiswa'" 
+              to="/profile/mahasiswa" 
+              class="py-1.5 px-4 rounded-full hover:bg-gray-800 transition text-white"
+            >
+              Dashboard Saya
+            </router-link>
+            <router-link 
+              v-else-if="user.role === 'perusahaan'" 
+              to="/dashboard/perusahaan" 
+              class="py-1.5 px-4 rounded-full hover:bg-gray-800 transition text-white"
+            >
+              Dashboard
+            </router-link>
             <button 
               @click="handleLogout" 
-              class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
+              class="py-1.5 px-4 rounded-full bg-black text-white hover:bg-gray-800 transition"
             >
               Logout
             </button>
           </div>
+
+          <template v-else>
+            <router-link to="/login" class="py-1.5 px-4 rounded-full bg-black text-white hover:bg-gray-800 transition">Sign Up | Login</router-link>
+          </template>
         </div>
-      </div>
+      </nav>
     </header>
 
     <!-- Main Content - Flex grow untuk push footer ke bawah -->
-    <div class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 w-full">
+    <div class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 w-full pt-32">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Left Panel - Profile Card -->
         <div class="lg:col-span-1">
@@ -41,9 +59,9 @@
             <div class="w-32 h-32 mx-auto mb-4 bg-purple-600 rounded-full flex items-center justify-center text-white text-5xl font-bold">
               {{ user?.name?.charAt(0) || 'U' }}
             </div>
-            <h2 class="text-3xl font-bold text-white mb-2">{{ user?.name || 'Nama User' }}</h2>
-            <p class="text-white/80 text-lg">{{ mahasiswa?.nim || 'NIM' }}</p>
-            <p class="text-white/80">{{ mahasiswa?.jurusan || 'Jurusan' }} - {{ mahasiswa?.fakultas || 'Fakultas' }}</p>
+            <h2 class="text-3xl font-bold text-black mb-2">{{ user?.name || 'Nama User' }}</h2>
+            <p class="text-black text-lg">{{ mahasiswa?.nim || 'NIM' }}</p>
+            <p class="text-black">{{ mahasiswa?.jurusan || 'Jurusan' }} - {{ mahasiswa?.fakultas || 'Fakultas' }}</p>
           </div>
         </div>
 
@@ -95,25 +113,31 @@
       </div>
     </div>
 
-    <!-- Footer - Akan selalu di bawah -->
-    <footer class="bg-purple-900 mt-auto py-8">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div>
-            <h4 class="text-white font-bold mb-4">Informasi Kontak</h4>
-            <p class="text-white/80">Email : unika@unika.ac.id</p>
-            <p class="text-white/80">WhatsApp Official : 08123-2345-479</p>
+    <!-- FOOTER -->
+    <footer class="bg-purple-900 text-white py-16 font-roboto mt-auto">
+      <div class="max-w-6xl mx-auto px-6">
+        <div class="mb-12">
+          <h3 class="text-2xl md:text-3xl font-bold font-poppins mb-4">Informasi Kontak</h3>
+          <ul class="space-y-2 text-gray-300">
+            <li>Email : <a href="mailto:unika@unika.ac.id" class="hover:text-purple-300 transition">unika@unika.ac.id</a></li>
+            <li>Hotline : (024) 850 5003</li>
+            <li>WhatsApp Official : <a href="https://wa.me/6281232345479" class="hover:text-purple-300 transition">08123 2345 479</a></li>
+          </ul>
+        </div>
+
+        <div class="flex items-center justify-center gap-4 mb-8">
+          <div class="flex flex-col text-3xl font-poppins text-white">
+            <span>Porto</span>
+            <span>Connect</span>
           </div>
-          <div class="flex items-center gap-4">
-            <h1 class="text-2xl font-bold text-white">Porto Connect</h1>
-            <span class="text-white">×</span>
-            <div class="flex items-center gap-2">
-              <img src="@/assets/logo-soegija-putih.png" alt="Logo" class="h-8" />
-              <span class="text-white text-sm font-semibold">SOEGIJAPRANATA CATHOLIC UNIVERSITY</span>
-            </div>
+          <span class="text-3xl text-white">×</span>
+          <div class="flex items-center gap-2">
+            <img src="@/assets/logo-soegija-putih.png" alt="Logo SCU" class="h-16" />
           </div>
         </div>
       </div>
+
+      <div class="border-t border-purple-800 mt-12 pt-8 text-center text-gray-500 text-sm">&copy; 2025 PortoConnect. All rights reserved.</div>
     </footer>
   </div>
 </template>
@@ -193,52 +217,24 @@ const handleLogout = async () => {
   }
 }
 
-const goToCreatePortfolio = async () => {
-  try {
-    const token = localStorage.getItem('token')
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-    }
-
-    // Create new portfolio with default values
-    const res = await axios.post('/api/mahasiswa/portfolios', {
-      nama: 'Portofolio Baru',
-      bidang: '',
-      deskripsi: ''
-    })
-
-    // Redirect to preview page with the new portfolio ID
-    if (res.data.portofolio?.id || res.data.portfolio?.id) {
-      const portfolioId = res.data.portofolio?.id || res.data.portfolio?.id
-      router.push(`/portfolio/preview/${portfolioId}`)
-    } else {
-      // Fallback: redirect to list if creation fails
-      router.push('/portfolio/list')
-    }
-  } catch (error) {
-    console.error('Error creating portfolio:', error)
-    alert('Gagal membuat portofolio baru: ' + (error.response?.data?.message || 'Unknown error'))
-    // Fallback: redirect to list
-    router.push('/portfolio/list')
-  }
+const goToCreatePortfolio = () => {
+  // Langsung redirect ke halaman preview dengan ID "new"
+  router.push('/portfolio/preview/new')
 }
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Roboto:wght@400&display=swap');
+.font-poppins { font-family: 'Poppins', sans-serif; }
+.font-roboto { font-family: 'Roboto', sans-serif; }
+
 .dashboard-gradient {
-  background: 
-    radial-gradient(ellipse 150% 80% at 50% 0%, 
-      #4c1d95 0%, 
-      #5b21b6 10%, 
-      #6b21a8 20%, 
-      #7c3aed 35%, 
-      #9333ea 50%, 
-      #a855f7 65%, 
-      #c084fc 80%, 
-      #ddd6fe 92%, 
-      #f3e8ff 98%, 
-      #ffffff 100%
-    );
+  background: radial-gradient(
+    ellipse 160% 120% at 50% -55%,
+    #000000 48%,
+    #50145C 60%,
+    #ffffff 80%
+  );
 }
 </style>
 

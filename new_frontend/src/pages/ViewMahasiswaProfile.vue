@@ -1,32 +1,18 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-b from-purple-800 via-purple-600 to-purple-400 flex flex-col">
-    <!-- Header -->
-    <header class="bg-gray-100 rounded-b-lg shadow-sm mb-8">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div class="flex justify-between items-center">
-          <div class="flex items-center gap-4">
-            <button 
-              @click="goBack" 
-              class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 flex items-center gap-2"
-            >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              Kembali
-            </button>
-            <h1 class="text-2xl font-bold text-purple-700">Porto Connect</h1>
-            <span class="text-gray-400">×</span>
-            <div class="flex items-center gap-2">
-              <img src="@/assets/logo-soegija.png" alt="Logo" class="h-8" />
-              <span class="text-sm font-semibold">SOEGIJAPRANATA CATHOLIC UNIVERSITY</span>
-            </div>
-          </div>
-          <div class="flex items-center gap-6">
-            <router-link to="/" class="text-gray-700 hover:text-purple-700">Home</router-link>
-            <router-link to="/explore" class="text-gray-700 hover:text-purple-700">Portofolio</router-link>
-          </div>
-        </div>
-      </div>
+  <div class="min-h-screen dashboard-gradient flex flex-col">
+    <!-- NAVBAR -->
+    <header class="fixed top-6 left-0 right-0 z-50">
+      <nav class="max-w-6xl mx-auto py-3 px-6 bg-white rounded-full flex items-center shadow-lg">
+        <button 
+          @click="goBack" 
+          class="text-gray-700 hover:text-purple-700 transition flex items-center gap-2"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Kembali
+        </button>
+      </nav>
     </header>
 
     <div v-if="loading" class="flex items-center justify-center flex-grow">
@@ -37,7 +23,7 @@
       <p class="text-white text-lg">{{ error }}</p>
     </div>
 
-    <div v-else-if="user && mahasiswa" class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 w-full">
+    <div v-else-if="user && mahasiswa" class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 w-full pt-32">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Left Panel - Profile Card -->
         <div class="lg:col-span-1">
@@ -45,10 +31,10 @@
             <div class="w-32 h-32 mx-auto mb-4 bg-purple-600 rounded-full flex items-center justify-center text-white text-5xl font-bold">
               {{ user?.name?.charAt(0) || 'U' }}
             </div>
-            <h2 class="text-3xl font-bold text-white mb-2">{{ user?.name || 'Nama User' }}</h2>
-            <p class="text-white/80 text-lg">{{ mahasiswa?.nim || 'NIM' }}</p>
-            <p class="text-white/80">{{ mahasiswa?.jurusan || 'Jurusan' }} - {{ mahasiswa?.fakultas || 'Fakultas' }}</p>
-            <p v-if="mahasiswa?.universitas" class="text-white/80 mt-2">{{ mahasiswa.universitas }}</p>
+            <h2 class="text-3xl font-bold text-black mb-2">{{ user?.name || 'Nama User' }}</h2>
+            <p class="text-black text-lg">{{ mahasiswa?.nim || 'NIM' }}</p>
+            <p class="text-black">{{ mahasiswa?.jurusan || 'Jurusan' }} - {{ mahasiswa?.fakultas || 'Fakultas' }}</p>
+            <p v-if="mahasiswa?.universitas" class="text-black mt-2">{{ mahasiswa.universitas }}</p>
           </div>
         </div>
 
@@ -161,25 +147,31 @@
       </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-purple-900 mt-auto py-8">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div>
-            <h4 class="text-white font-bold mb-4">Informasi Kontak</h4>
-            <p class="text-white/80">Email : unika@unika.ac.id</p>
-            <p class="text-white/80">WhatsApp Official : 08123-2345-479</p>
+    <!-- FOOTER -->
+    <footer class="bg-purple-900 text-white py-16 font-roboto mt-auto">
+      <div class="max-w-6xl mx-auto px-6">
+        <div class="mb-12">
+          <h3 class="text-2xl md:text-3xl font-bold font-poppins mb-4">Informasi Kontak</h3>
+          <ul class="space-y-2 text-gray-300">
+            <li>Email : <a href="mailto:unika@unika.ac.id" class="hover:text-purple-300 transition">unika@unika.ac.id</a></li>
+            <li>Hotline : (024) 850 5003</li>
+            <li>WhatsApp Official : <a href="https://wa.me/6281232345479" class="hover:text-purple-300 transition">08123 2345 479</a></li>
+          </ul>
+        </div>
+
+        <div class="flex items-center justify-center gap-4 mb-8">
+          <div class="flex flex-col text-3xl font-poppins text-white">
+            <span>Porto</span>
+            <span>Connect</span>
           </div>
-          <div class="flex items-center gap-4">
-            <h1 class="text-2xl font-bold text-white">Porto Connect</h1>
-            <span class="text-white">×</span>
-            <div class="flex items-center gap-2">
-              <img src="@/assets/logo-soegija-putih.png" alt="Logo" class="h-8" />
-              <span class="text-white text-sm font-semibold">SOEGIJAPRANATA CATHOLIC UNIVERSITY</span>
-            </div>
+          <span class="text-3xl text-white">×</span>
+          <div class="flex items-center gap-2">
+            <img src="@/assets/logo-soegija-putih.png" alt="Logo SCU" class="h-16" />
           </div>
         </div>
       </div>
+
+      <div class="border-t border-purple-800 mt-12 pt-8 text-center text-gray-500 text-sm">&copy; 2025 PortoConnect. All rights reserved.</div>
     </footer>
   </div>
 </template>
@@ -249,4 +241,19 @@ onMounted(async () => {
   }
 })
 </script>
+
+<style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Roboto:wght@400&display=swap');
+.font-poppins { font-family: 'Poppins', sans-serif; }
+.font-roboto { font-family: 'Roboto', sans-serif; }
+
+.dashboard-gradient {
+  background: radial-gradient(
+    ellipse 160% 120% at 50% -55%,
+    #000000 48%,
+    #50145C 60%,
+    #ffffff 80%
+  );
+}
+</style>
 

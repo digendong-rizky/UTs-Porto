@@ -1,37 +1,60 @@
 <template>
   <div class="min-h-screen dashboard-gradient flex flex-col">
-    <!-- Header -->
-    <header class="bg-white shadow-sm">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div class="flex justify-between items-center">
-          <div class="flex items-center gap-4">
-            <h1 class="text-2xl font-bold text-purple-700">Porto Connect</h1>
-            <span class="text-gray-400">×</span>
-            <div class="flex items-center gap-2">
-              <img src="@/assets/logo-soegija.png" alt="Logo" class="h-8" />
-              <span class="text-sm font-semibold">SOEGIJAPRANATA CATHOLIC UNIVERSITY</span>
-            </div>
-          </div>
-          <div class="flex items-center gap-6">
-            <router-link to="/" class="text-gray-700 hover:text-purple-700">Home</router-link>
-            <div class="flex items-center gap-2 bg-gray-200 px-4 py-2 rounded-lg">
-              <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center text-white">
-                {{ currentUser?.name?.charAt(0) || 'C' }}
-              </div>
-              <span class="font-semibold">{{ currentUser?.name || 'Company' }}</span>
-            </div>
-            <button @click="handleLogout" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600">
+    <!-- NAVBAR -->
+    <header class="fixed top-6 left-0 right-0 z-50">
+      <nav class="max-w-6xl mx-auto py-3 px-6 bg-white rounded-full flex justify-between items-center shadow-lg">
+        <div class="flex items-center gap-3">
+          <span class="text-xl font-bold font-poppins text-purple-700">Porto Connect</span>
+          <img src="@/assets/logo-soegija.png" alt="Soegijapranata Logo" class="h-8" />
+        </div>
+
+        <div class="hidden md:flex items-center gap-8 font-roboto">
+          <router-link to="/" class="text-gray-700 hover:text-purple-700 transition">Home</router-link>
+          <router-link 
+            v-if="!currentUser || currentUser.role !== 'perusahaan'"
+            to="/explore" 
+            class="text-gray-700 hover:text-purple-700 transition"
+          >
+            Portofolio
+          </router-link>
+        </div>
+
+        <div class="flex items-center gap-4 font-roboto">
+          <div v-if="currentUser" class="py-1.5 px-4 rounded-full bg-black text-white hover:bg-gray-800 transition flex items-center gap-2">
+            <router-link 
+              v-if="currentUser.role === 'mahasiswa'" 
+              to="/profile/mahasiswa" 
+              class="hover:underline"
+            >
+              Dashboard Saya
+            </router-link>
+            <router-link 
+              v-else-if="currentUser.role === 'perusahaan'" 
+              to="/dashboard/perusahaan" 
+              class="hover:underline"
+            >
+              Dashboard
+            </router-link>
+            <span>|</span>
+            <button 
+              @click="handleLogout" 
+              class="hover:underline cursor-pointer"
+            >
               Logout
             </button>
           </div>
+
+          <template v-else>
+            <router-link to="/login" class="py-1.5 px-4 rounded-full bg-black text-white hover:bg-gray-800 transition">Sign Up | Login</router-link>
+          </template>
         </div>
-      </div>
+      </nav>
     </header>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow pt-32">
       <div class="flex gap-6">
         <!-- Sidebar Kategori -->
-        <aside class="w-64 bg-white rounded-lg shadow-sm p-4 h-fit sticky top-4">
+        <aside class="w-64 bg-white rounded-lg shadow-sm p-4 h-fit mt-8">
           <h3 class="font-bold text-gray-800 mb-4">Kategori Bidang</h3>
           <ul class="space-y-2">
             <li>
@@ -105,7 +128,7 @@
         <!-- Main Content -->
         <main class="flex-1">
             <!-- Search Form -->
-            <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <div class="bg-white rounded-lg shadow p-6 mb-6 mt-8">
               <h2 class="text-xl font-bold mb-4">Cari Mahasiswa</h2>
               <form @submit.prevent="searchStudents" class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
@@ -136,12 +159,12 @@
               </form>
             </div>
 
-            <h2 class="text-3xl font-bold text-gray-800 mb-6">Jelajahi Portofolio Mahasiswa</h2>
+            <h2 class="text-3xl font-bold text-white mb-6">Jelajahi Portofolio Mahasiswa</h2>
             
             <!-- Portfolio Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div
-                v-for="portfolio in filteredPortfoliosPortfolio"
+                v-for="portfolio in paginatedPortfolios"
                 :key="portfolio.id"
                 class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer transform hover:scale-105"
                 @click="viewPortfolio(portfolio)"
@@ -203,29 +226,58 @@
             <div v-if="filteredPortfoliosPortfolio.length === 0" class="text-center text-gray-500 py-12">
               <p>Tidak ada portofolio yang ditemukan</p>
             </div>
+
+            <!-- Pagination -->
+            <div v-if="filteredPortfoliosPortfolio.length > 6" class="mt-6 flex justify-center items-center gap-2">
+              <button 
+                @click="currentPage = Math.max(1, currentPage - 1)"
+                :disabled="currentPage === 1"
+                :class="currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'"
+                class="px-4 py-2 border rounded-lg bg-white text-gray-700"
+              >
+                ←
+              </button>
+              <span class="px-4 py-2 text-gray-700 bg-white border rounded-lg text-sm">
+                {{ currentPage }} / {{ totalPages }}
+              </span>
+              <button 
+                @click="currentPage = Math.min(totalPages, currentPage + 1)"
+                :disabled="currentPage === totalPages"
+                :class="currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'"
+                class="px-4 py-2 border rounded-lg bg-white text-gray-700"
+              >
+                →
+              </button>
+            </div>
           </main>
       </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-purple-900 py-8 mt-auto">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div>
-            <h4 class="text-white font-bold mb-4">Informasi Kontak</h4>
-            <p class="text-white/80">Email : unika@unika.ac.id</p>
-            <p class="text-white/80">WhatsApp Official : 08123-2345-479</p>
+    <!-- FOOTER -->
+    <footer class="bg-purple-900 text-white py-16 font-roboto mt-auto">
+      <div class="max-w-6xl mx-auto px-6">
+        <div class="mb-12">
+          <h3 class="text-2xl md:text-3xl font-bold font-poppins mb-4">Informasi Kontak</h3>
+          <ul class="space-y-2 text-gray-300">
+            <li>Email : <a href="mailto:unika@unika.ac.id" class="hover:text-purple-300 transition">unika@unika.ac.id</a></li>
+            <li>Hotline : (024) 850 5003</li>
+            <li>WhatsApp Official : <a href="https://wa.me/6281232345479" class="hover:text-purple-300 transition">08123 2345 479</a></li>
+          </ul>
+        </div>
+
+        <div class="flex items-center justify-center gap-4 mb-8">
+          <div class="flex flex-col text-3xl font-poppins text-white">
+            <span>Porto</span>
+            <span>Connect</span>
           </div>
-          <div class="flex items-center gap-4">
-            <h1 class="text-2xl font-bold text-white">Porto Connect</h1>
-            <span class="text-white">×</span>
-            <div class="flex items-center gap-2">
-              <img src="@/assets/logo-soegija-putih.png" alt="Logo" class="h-8" />
-              <span class="text-white text-sm font-semibold">SOEGIJAPRANATA CATHOLIC UNIVERSITY</span>
-            </div>
+          <span class="text-3xl text-white">×</span>
+          <div class="flex items-center gap-2">
+            <img src="@/assets/logo-soegija-putih.png" alt="Logo SCU" class="h-16" />
           </div>
         </div>
       </div>
+
+      <div class="border-t border-purple-800 mt-12 pt-8 text-center text-gray-500 text-sm">&copy; 2025 PortoConnect. All rights reserved.</div>
     </footer>
   </div>
 </template>
@@ -234,6 +286,9 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
+import { useSweetAlert } from '@/composables/useSweetAlert'
+
+const { showSuccess, showError, showWarning } = useSweetAlert()
 
 const router = useRouter()
 const currentUser = ref(null)
@@ -242,6 +297,8 @@ const currentUser = ref(null)
 const portfoliosPortfolio = ref([])
 const allPortfoliosPortfolio = ref([])
 const selectedBidangPortfolio = ref(null)
+const currentPage = ref(1)
+const itemsPerPage = 6
 
 // Search Data
 const searchResults = ref([])
@@ -288,7 +345,7 @@ onMounted(async () => {
       localStorage.removeItem('token')
       router.push('/login')
     } else {
-      alert('Gagal memuat data. Silakan refresh halaman.')
+      showError('Gagal memuat data. Silakan refresh halaman.')
     }
   }
 })
@@ -299,6 +356,9 @@ const loadPortfoliosPortfolio = async (bidang = null) => {
     const params = bidang ? { bidang } : {}
     const response = await axios.get('/api/portfolios/public', { params })
     portfoliosPortfolio.value = response.data.portfolios || []
+    
+    // Reset to first page when loading new data
+    currentPage.value = 1
     
     if (allPortfoliosPortfolio.value.length === 0) {
       const allResponse = await axios.get('/api/portfolios/public')
@@ -311,6 +371,7 @@ const loadPortfoliosPortfolio = async (bidang = null) => {
 
 const filterByBidangPortfolio = async (bidang) => {
   selectedBidangPortfolio.value = bidang
+  currentPage.value = 1 // Reset to first page when filtering
   
   // If there are search results, filter them by bidang
   if (searchResults.value.length > 0) {
@@ -336,6 +397,20 @@ const totalPortfoliosPortfolio = computed(() => {
   return allPortfoliosPortfolio.value.length
 })
 
+// Pagination computed
+const totalPages = computed(() => {
+  return Math.ceil(filteredPortfoliosPortfolio.value.length / itemsPerPage)
+})
+
+const paginatedPortfolios = computed(() => {
+  if (filteredPortfoliosPortfolio.value.length <= itemsPerPage) {
+    return filteredPortfoliosPortfolio.value
+  }
+  const start = (currentPage.value - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return filteredPortfoliosPortfolio.value.slice(start, end)
+})
+
 const getCountByBidangPortfolio = (bidang) => {
   return allPortfoliosPortfolio.value.filter(p => p.bidang === bidang).length
 }
@@ -351,7 +426,7 @@ const searchStudents = async () => {
                               searchForm.value.universitas
     
     if (!hasSearchCriteria) {
-      alert('Silakan isi minimal satu field pencarian')
+      showWarning('Silakan isi minimal satu field pencarian')
       return
     }
 
@@ -454,7 +529,7 @@ const searchStudents = async () => {
       console.log('Filtered portfolios:', portfoliosPortfolio.value.length) // Debug log
       
       if (portfoliosPortfolio.value.length === 0) {
-        alert(`Ditemukan ${students.length} mahasiswa, tapi tidak ada portofolio yang sesuai dengan kriteria pencarian`)
+        showWarning(`Ditemukan ${students.length} mahasiswa, tapi tidak ada portofolio yang sesuai dengan kriteria pencarian`)
       } else {
         // Success - portfolios are already updated
         console.log('Search successful, showing portfolios')
@@ -462,7 +537,7 @@ const searchStudents = async () => {
     } else {
       // If no search results, reload with current bidang filter
       await loadPortfoliosPortfolio(selectedBidangPortfolio.value)
-      alert('Tidak ada mahasiswa yang ditemukan dengan kriteria pencarian tersebut')
+      showWarning('Tidak ada mahasiswa yang ditemukan dengan kriteria pencarian tersebut')
     }
   } catch (error) {
     console.error('Error searching students:', error)
@@ -474,9 +549,9 @@ const searchStudents = async () => {
     
     if (typeof errorMessage === 'object') {
       const errorList = Object.values(errorMessage).flat().join(', ')
-      alert(`Error: ${errorList}`)
+      showError(`Error: ${errorList}`)
     } else {
-      alert(`Error: ${errorMessage}`)
+      showError(`Error: ${errorMessage}`)
     }
     
     // If error, reload all portfolios
@@ -503,6 +578,10 @@ const handleLogout = async () => {
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Roboto:wght@400&display=swap');
+.font-poppins { font-family: 'Poppins', sans-serif; }
+.font-roboto { font-family: 'Roboto', sans-serif; }
+
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -511,18 +590,11 @@ const handleLogout = async () => {
 }
 
 .dashboard-gradient {
-  background: 
-    radial-gradient(ellipse 150% 80% at 50% 0%, 
-      #4c1d95 0%, 
-      #5b21b6 10%, 
-      #6b21a8 20%, 
-      #7c3aed 35%, 
-      #9333ea 50%, 
-      #a855f7 65%, 
-      #c084fc 80%, 
-      #ddd6fe 92%, 
-      #f3e8ff 98%, 
-      #ffffff 100%
-    );
+  background: radial-gradient(
+    ellipse 160% 120% at 50% -55%,
+    #000000 48%,
+    #50145C 60%,
+    #ffffff 80%
+  );
 }
 </style>
